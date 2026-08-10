@@ -17,8 +17,12 @@ export default function Login() {
     setLoading(true)
 
     try {
-      await login({ email, password })
-      navigate('/')
+      const data = await login({ email, password })
+      if (data.user?.role === 'portaria') {
+        navigate('/portaria')
+      } else {
+        navigate('/')
+      }
     } catch (err) {
       setError(err.message || 'Não foi possível entrar.')
     } finally {

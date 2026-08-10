@@ -18,6 +18,7 @@ const initialState = {
   purchasing: false,
   purchaseError: null,
   purchaseSuccess: false,
+  ticketCode: null,
 }
 
 function reducer(state, action) {
@@ -48,6 +49,7 @@ function reducer(state, action) {
         ...state,
         purchasing: false,
         purchaseSuccess: true,
+        ticketCode: action.ticketCode,
         quantity: 1,
         areas: state.areas.map((area) =>
           area.key === action.areaKey
@@ -95,6 +97,7 @@ export default function ShowDetail() {
     purchasing,
     purchaseError,
     purchaseSuccess,
+    ticketCode,
   } = state
 
   useEffect(() => {
@@ -156,6 +159,7 @@ export default function ShowDetail() {
         type: 'PURCHASE_OK',
         areaKey: selectedArea,
         remaining: result.remaining,
+        ticketCode: result.ticketCode,
       })
     } catch (err) {
       dispatch({ type: 'PURCHASE_ERROR', error: err.message })
@@ -311,8 +315,13 @@ export default function ShowDetail() {
               </div>
 
               <div className="detail__checkout-actions">
-                {purchaseSuccess ? (
-                  <p className="detail__success">Compra realizada! Bom show.</p>
+                {purchaseSuccess && ticketCode ? (
+                  <div className="detail__ticket-link">
+                    <p className="detail__success">Compra realizada! Bom show.</p>
+                    <Link to={`/ingresso/${ticketCode}`} className="btn btn--secondary">
+                      🎟️ Ver meu ingresso
+                    </Link>
+                  </div>
                 ) : null}
                 {purchaseError ? <p className="detail__error">{purchaseError}</p> : null}
 

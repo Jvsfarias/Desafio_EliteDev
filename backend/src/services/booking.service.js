@@ -1,5 +1,6 @@
 import Booking from '../models/Booking.js'
 import Event from '../models/Event.js'
+import { createTicket } from './ticket.service.js'
 
 function createHttpError(message, status) {
   const error = new Error(message)
@@ -104,6 +105,20 @@ export async function bookSeats({ eventId, sessionDate, sessionTime, seats, user
     totalPrice,
   })
 
+  const ticket = await createTicket({
+    bookingId: booking._id,
+    eventId: event._id,
+    userId,
+    eventTitle: event.title,
+    eventVenue: event.venue,
+    eventDate: sessionDate,
+    eventTime: sessionTime,
+    seats,
+    sessionDate,
+    sessionTime,
+    totalPrice,
+  })
+
   return {
     id: booking._id.toString(),
     eventId: booking.eventId.toString(),
@@ -111,6 +126,7 @@ export async function bookSeats({ eventId, sessionDate, sessionTime, seats, user
     sessionTime: booking.sessionTime,
     seats: booking.seats,
     totalPrice: booking.totalPrice,
+    ticketCode: ticket.code,
     createdAt: booking.createdAt,
   }
 }
@@ -160,6 +176,20 @@ export async function bookShowArea({ eventId, areaKey, quantity, userId, userRol
     totalPrice,
   })
 
+  const ticket = await createTicket({
+    bookingId: booking._id,
+    eventId: event._id,
+    userId,
+    eventTitle: event.title,
+    eventVenue: event.venue,
+    eventDate: event.showDate,
+    eventTime: event.showTime,
+    areaKey,
+    areaLabel: area.label,
+    quantity: qty,
+    totalPrice,
+  })
+
   return {
     id: booking._id.toString(),
     eventId: booking.eventId.toString(),
@@ -167,6 +197,7 @@ export async function bookShowArea({ eventId, areaKey, quantity, userId, userRol
     quantity: booking.quantity,
     totalPrice: booking.totalPrice,
     remaining: selected.remaining - qty,
+    ticketCode: ticket.code,
     createdAt: booking.createdAt,
   }
 }

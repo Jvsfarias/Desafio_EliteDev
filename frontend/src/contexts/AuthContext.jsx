@@ -14,6 +14,7 @@ export function AuthProvider({ children }) {
   const user = session?.user ?? null
   const token = session?.token ?? null
   const isOrganizer = user?.role === 'organizador'
+  const isPortaria = user?.role === 'portaria'
 
   async function login(credentials) {
     const data = await authService.login(credentials)
@@ -40,11 +41,12 @@ export function AuthProvider({ children }) {
       token,
       isAuthenticated: Boolean(user),
       isOrganizer,
+      isPortaria,
       login,
       register,
       logout,
     }),
-    [user, token, isOrganizer],
+    [user, token, isOrganizer, isPortaria],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

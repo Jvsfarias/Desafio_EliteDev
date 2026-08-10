@@ -11,7 +11,7 @@ function formatName(name = '') {
 
 export default function Navbar({ activeSection, onNavigate }) {
   const navigate = useNavigate()
-  const { user, isAuthenticated, isOrganizer, logout } = useAuth()
+  const { user, isAuthenticated, isOrganizer, isPortaria, logout } = useAuth()
   const showRole = user?.role && user.role !== 'cliente'
 
   function handleSectionNavigate(section) {
@@ -26,30 +26,42 @@ export default function Navbar({ activeSection, onNavigate }) {
   return (
     <header className="navbar">
       <div className="navbar__inner">
-        <Link to="/" className="navbar__brand" aria-label="EliteDev Eventos">
+        <Link
+          to={isPortaria ? '/portaria' : '/'}
+          className="navbar__brand"
+          aria-label="EliteDev Eventos"
+        >
           <Logo />
         </Link>
 
         <nav className="navbar__nav" aria-label="Principal">
-          <button
-            type="button"
-            className={`navbar__link ${activeSection === 'cinema' ? 'is-active' : ''}`}
-            onClick={() => handleSectionNavigate('cinema')}
-          >
-            Cinema
-          </button>
-          <button
-            type="button"
-            className={`navbar__link ${activeSection === 'eventos' ? 'is-active' : ''}`}
-            onClick={() => handleSectionNavigate('eventos')}
-          >
-            Eventos
-          </button>
-          {isOrganizer ? (
-            <Link to="/eventos/novo" className="navbar__action">
-              Criar evento
+          {isPortaria ? (
+            <Link to="/portaria" className="navbar__action is-active">
+              Portaria
             </Link>
-          ) : null}
+          ) : (
+            <>
+              <button
+                type="button"
+                className={`navbar__link ${activeSection === 'cinema' ? 'is-active' : ''}`}
+                onClick={() => handleSectionNavigate('cinema')}
+              >
+                Cinema
+              </button>
+              <button
+                type="button"
+                className={`navbar__link ${activeSection === 'eventos' ? 'is-active' : ''}`}
+                onClick={() => handleSectionNavigate('eventos')}
+              >
+                Eventos
+              </button>
+              {isOrganizer ? (
+                <Link to="/eventos/novo" className="navbar__action">
+                  Criar evento
+                </Link>
+              ) : null}
+            </>
+          )}
         </nav>
 
         {isAuthenticated ? (

@@ -19,6 +19,7 @@ const initialState = {
   purchasing: false,
   purchaseError: null,
   purchaseSuccess: false,
+  ticketCode: null,
 }
 
 function reducer(state, action) {
@@ -61,6 +62,7 @@ function reducer(state, action) {
         ...state,
         purchasing: false,
         purchaseSuccess: true,
+        ticketCode: action.ticketCode,
         selectedSeats: [],
         takenSeats: [...state.takenSeats, ...action.seats],
       }
@@ -103,6 +105,7 @@ export default function MovieDetail() {
     purchasing,
     purchaseError,
     purchaseSuccess,
+    ticketCode,
   } = state
 
   useEffect(() => {
@@ -162,14 +165,14 @@ export default function MovieDetail() {
     dispatch({ type: 'PURCHASING' })
 
     try {
-      await bookingService.book({
+      const result = await bookingService.book({
         eventId: id,
         sessionDate: selectedDate,
         sessionTime: selectedTime,
         seats: selectedSeats,
         token,
       })
-      dispatch({ type: 'PURCHASE_OK', seats: selectedSeats })
+      dispatch({ type: 'PURCHASE_OK', seats: selectedSeats, ticketCode: result.ticketCode })
     } catch (err) {
       dispatch({ type: 'PURCHASE_ERROR', error: err.message })
     }
@@ -349,8 +352,13 @@ export default function MovieDetail() {
               </div>
 
               <div className="detail__checkout-actions">
-                {purchaseSuccess && (
-                  <p className="detail__success">Compra realizada! Bons filmes.</p>
+                {purchaseSuccess && ticketCode && (
+                  <div className="detail__ticket-link">
+                    <p className="detail__success">Compra realizada! Bons filmes.</p>
+                    <Link to={`/ingresso/${ticketCode}`} className="btn btn--secondary">
+                      🎟️ Ver meu ingresso
+                    </Link>
+                  </div>
                 )}
                 {purchaseError && <p className="detail__error">{purchaseError}</p>}
 
