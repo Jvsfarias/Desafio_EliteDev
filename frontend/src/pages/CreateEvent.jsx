@@ -17,7 +17,9 @@ export default function CreateEvent() {
   const { token } = useAuth()
   const [mode, setMode] = useState('cinema')
   const [catalog, setCatalog] = useState([])
+  const [shows, setShows] = useState([])
   const [catalogItemId, setCatalogItemId] = useState('')
+  const [showItemId, setShowItemId] = useState('')
   const [rating, setRating] = useState(DEFAULT_AGE_RATING)
   const [venue, setVenue] = useState('')
   const [price, setPrice] = useState('')
@@ -26,6 +28,7 @@ export default function CreateEvent() {
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
   const [loadingCatalog, setLoadingCatalog] = useState(true)
+  const [loadingShows, setLoadingShows] = useState(false)
 
   const movies = catalog.filter((item) => item.type === 'filme')
 
@@ -42,7 +45,7 @@ export default function CreateEvent() {
       }
 
       try {
-        const items = await catalogService.listCatalog(token)
+        const items = await catalogService.listMovies(token)
         if (active) {
           setCatalog(items)
         }
@@ -63,6 +66,38 @@ export default function CreateEvent() {
       active = false
     }
   }, [token])
+
+  useEffect(() => {
+    let active = true
+
+    async function loadShows() {
+      if (mode !== 'show' || !token || shows.length > 0) return
+
+      setLoadingShows(true)
+      setError('')
+
+      try {
+        const items = await catalogService.listShows(token)
+        if (active) {
+          setShows(items)
+        }
+      } catch (err) {
+        if (active) {
+          setError(err.message || 'Não foi possível carregar os shows.')
+        }
+      } finally {
+        if (active) {
+          setLoadingShows(false)
+        }
+      }
+    }
+
+    loadShows()
+
+    return () => {
+      active = false
+    }
+  }, [mode, token, shows.length])
 
   function updateSession(index, patch) {
     setSessions((current) =>
@@ -221,11 +256,30 @@ export default function CreateEvent() {
         </div>
 
         {mode === 'show' ? (
-          <div className="create-event__placeholder">
-            <h2>Shows em breve</h2>
-            <p>
-              O cadastro de shows com quantidade de ingressos será liberado no próximo
-              passo.
+          <div className="auth-form create-event__form">
+            {error ? <p className="auth-form__error">{error}</p> : null}
+
+            <label className="auth-form__field">
+              <span>Show</span>
+              <select
+                value={showItemId}
+                onChange={(e) => setShowItemId(e.target.value)}
+                disabled={loadingShows}
+              >
+                <option value="">
+                  {loadingShows ? 'Carregando...' : 'Selecione um show'}
+                </option>
+                {shows.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.title}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <p className="create-event__hint">
+              Por enquanto só o select do catálogo Ticketmaster está ativo. O cadastro
+              completo vem no próximo passo.
             </p>
           </div>
         ) : (

@@ -91,3 +91,82 @@ export async function listPopularMovies() {
     )
   }
 }
+
+function pickBestImage(images = []) {
+  if (!Array.isArray(images) || images.length === 0) return ''
+
+  const preferred =
+    images.find((image) => image.ratio === '16_9' && image.width >= 1024) ||
+    images.find((image) => image.ratio === '16_9') ||
+    images[0]
+
+  return preferred?.url || ''
+}
+
+export function mapTicketmasterEvent(event) {
+  const attraction = event._embedded?.attractions?.[0]
+
+  return {
+    id: String(event.id),
+    type: 'show',
+    title: attraction?.name || event.name || 'Sem título',
+    image: pickBestImage(event.images),
+    attractionId: attraction?.id ? String(attraction.id) : '',
+  }
+}
+
+function normalizeShowTitle(title) {
+  return title
+    .split(' - ')[0]
+    .trim()
+    .toLowerCase()
+}
+
+function dedupeShows(shows) {
+  const seen = new Set()
+
+  return shows.reduce((unique, show) => {
+    const key = show.attractionId || normalizeShowTitle(show.title)
+    if (!key || seen.has(key)) return unique
+
+    seen.add(key)
+    unique.push({
+      id: show.id,
+      type: show.type,
+      title: show.attractionId
+        ? show.title
+        : show.title.split(' - ')[0].trim() || show.title,
+      image: show.image,
+    })
+    return unique
+  }, [])
+}
+
+export async function listShows() {
+  const apiKey = process.env.TICKETMASTER_API_KEY
+
+  if (!apiKey) {
+    throw createHttpError('TICKETMASTER_API_KEY não configurado.', 500)
+  }
+
+  try {
+    const { data } = await axios.get(
+      'https://app.ticketmaster.com/discovery/v2/events.json',
+      {
+        params: {
+          countryCode: 'BR',
+          size: 50,
+          apikey: apiKey,
+        },
+      }
+    )
+
+    const results = Array.isArray(data._embedded?.events) ? data._embedded.events : []
+    return dedupeShows(results.map(mapTicketmasterEvent))
+  } catch (error) {
+    throw createHttpError(
+      'Falha ao buscar shows na Ticketmaster.',
+      error.response?.status || 500
+    )
+  }
+}

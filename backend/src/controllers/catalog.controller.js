@@ -1,4 +1,4 @@
-import { listPopularMovies } from '../services/catalog.service.js'
+import { listPopularMovies, listShows } from '../services/catalog.service.js'
 
 export async function listMovies(req, res) {
   try {
@@ -11,5 +11,19 @@ export async function listMovies(req, res) {
 
     console.error(error)
     return res.status(500).json({ message: 'Erro ao carregar catálogo de filmes.' })
+  }
+}
+
+export async function listShowCatalog(req, res) {
+  try {
+    const shows = await listShows()
+    return res.status(200).json(shows)
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ message: error.message })
+    }
+
+    console.error(error)
+    return res.status(500).json({ message: 'Erro ao carregar catálogo de shows.' })
   }
 }

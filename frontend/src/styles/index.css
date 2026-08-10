@@ -419,6 +419,13 @@ a.navbar__login {
   line-height: 1.5;
 }
 
+.create-event__hint {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-top: 0.25rem;
+}
+
 .create-event__form {
   background: var(--bg-elevated);
   border: 1px solid var(--line);
