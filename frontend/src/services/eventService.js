@@ -12,6 +12,17 @@ export const eventService = {
     }
   },
 
+  async listShows() {
+    try {
+      const { data } = await api.get('/events/shows')
+      return data
+    } catch (error) {
+      throw new Error(
+        getApiErrorMessage(error, 'Não foi possível carregar os shows.'),
+      )
+    }
+  },
+
   async create(payload, token) {
     try {
       const { data } = await api.post('/events', payload, {

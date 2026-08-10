@@ -6,7 +6,6 @@ import MovieCard from '../components/events/MovieCard'
 import EventCard from '../components/events/EventCard'
 import EditEventModal from '../components/events/EditEventModal'
 import { useAuth } from '../contexts/AuthContext'
-import { events } from '../data/mockData'
 import { eventService } from '../services/eventService'
 
 function scrollToSection(id) {
@@ -20,6 +19,9 @@ export default function Home() {
   const [movies, setMovies] = useState([])
   const [loadingMovies, setLoadingMovies] = useState(true)
   const [moviesError, setMoviesError] = useState('')
+  const [shows, setShows] = useState([])
+  const [loadingShows, setLoadingShows] = useState(true)
+  const [showsError, setShowsError] = useState('')
   const [editingEvent, setEditingEvent] = useState(null)
 
   function handleNavigate(section) {
@@ -41,21 +43,31 @@ export default function Home() {
     async function loadMovies() {
       try {
         const data = await eventService.listMovies()
-        if (active) {
-          setMovies(data)
-        }
+        if (active) setMovies(data)
       } catch (error) {
         if (active) {
           setMoviesError(error.message || 'Não foi possível carregar os filmes.')
         }
       } finally {
+        if (active) setLoadingMovies(false)
+      }
+    }
+
+    async function loadShows() {
+      try {
+        const data = await eventService.listShows()
+        if (active) setShows(data)
+      } catch (error) {
         if (active) {
-          setLoadingMovies(false)
+          setShowsError(error.message || 'Não foi possível carregar os shows.')
         }
+      } finally {
+        if (active) setLoadingShows(false)
       }
     }
 
     loadMovies()
+    loadShows()
 
     return () => {
       active = false
@@ -135,14 +147,26 @@ export default function Home() {
       <section id="eventos" className="listing listing--events">
         <div className="listing__header">
           <h2>Eventos em destaque</h2>
-          <p>Shows, teatro e cultura — programação ilustrativa.</p>
+          <p>Shows cadastrados pelo organizador.</p>
         </div>
 
-        <div className="listing__grid listing__grid--events">
-          {events.map((event, index) => (
-            <EventCard key={event.id} event={event} index={index} />
-          ))}
-        </div>
+        {loadingShows ? (
+          <p className="listing__status">Carregando shows...</p>
+        ) : null}
+
+        {showsError ? <p className="listing__status listing__status--error">{showsError}</p> : null}
+
+        {!loadingShows && !showsError && shows.length === 0 ? (
+          <p className="listing__status">Nenhum show cadastrado no momento.</p>
+        ) : null}
+
+        {!loadingShows && shows.length > 0 ? (
+          <div className="listing__grid listing__grid--events">
+            {shows.map((event, index) => (
+              <EventCard key={event.id} event={event} index={index} />
+            ))}
+          </div>
+        ) : null}
       </section>
 
       {editingEvent ? (

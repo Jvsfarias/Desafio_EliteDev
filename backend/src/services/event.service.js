@@ -42,12 +42,16 @@ function toPublicEvent(event) {
     title: event.title,
     type: event.type,
     image: event.image,
+    description: event.description || '',
     rating: event.rating || '',
     movieDetails: event.movieDetails || null,
     venue: event.venue,
     price: event.price,
     seatMap: event.seatMap,
     sessions: event.sessions,
+    showDate: event.showDate || '',
+    showTime: event.showTime || '',
+    areas: event.areas || [],
     capacity: event.capacity,
     createdBy: event.createdBy.toString(),
   }
@@ -109,12 +113,12 @@ export async function createEvent(payload, organizer) {
     throw createHttpError('Preencha todos os campos obrigatórios.', 400)
   }
 
-  if (type === 'show') {
-    throw createHttpError('Cadastro de shows ainda não está disponível.', 400)
+  if (type !== 'filme' && type !== 'show') {
+    throw createHttpError('Tipo de evento inválido.', 400)
   }
 
-  if (type !== 'filme') {
-    throw createHttpError('Tipo de evento inválido.', 400)
+  if (type === 'show') {
+    return createShowEvent(payload, organizer)
   }
 
   const parsedPrice = Number(price)
@@ -158,8 +162,65 @@ export async function createEvent(payload, organizer) {
   return toPublicEvent(event)
 }
 
+async function createShowEvent(payload, organizer) {
+  const { catalogItemId, title, image, description, venue, showDate, showTime, areas } = payload
+
+  if (!showDate || !DATE_PATTERN.test(showDate)) {
+    throw createHttpError('Informe uma data válida para o show.', 400)
+  }
+
+  if (!showTime || !TIME_PATTERN.test(showTime)) {
+    throw createHttpError('Informe um horário válido para o show.', 400)
+  }
+
+  if (!Array.isArray(areas) || areas.length === 0) {
+    throw createHttpError('Defina ao menos uma área com capacidade e preço.', 400)
+  }
+
+  const normalizedAreas = areas.map((area, i) => {
+    const capacity = Number(area.capacity)
+    const price = Number(area.price)
+
+    if (!area.key || !area.label) {
+      throw createHttpError(`Área ${i + 1} inválida.`, 400)
+    }
+    if (!Number.isFinite(capacity) || capacity < 0) {
+      throw createHttpError(`Capacidade inválida na área "${area.label}".`, 400)
+    }
+    if (!Number.isFinite(price) || price < 0) {
+      throw createHttpError(`Preço inválido na área "${area.label}".`, 400)
+    }
+
+    return { key: String(area.key), label: String(area.label), capacity, price }
+  })
+
+  const capacity = normalizedAreas.reduce((sum, a) => sum + a.capacity, 0)
+
+  const event = await Event.create({
+    catalogItemId: String(catalogItemId).trim(),
+    title: String(title).trim(),
+    type: 'show',
+    image: image ? String(image).trim() : '',
+    description: description ? String(description).trim() : '',
+    venue: String(venue).trim(),
+    showDate,
+    showTime,
+    areas: normalizedAreas,
+    price: 0,
+    capacity,
+    createdBy: organizer._id,
+  })
+
+  return toPublicEvent(event)
+}
+
 export async function listMovieEvents() {
   const events = await Event.find({ type: 'filme' }).sort({ createdAt: -1 })
+  return events.map(toPublicEvent)
+}
+
+export async function listShowEvents() {
+  const events = await Event.find({ type: 'show' }).sort({ createdAt: -1 })
   return events.map(toPublicEvent)
 }
 

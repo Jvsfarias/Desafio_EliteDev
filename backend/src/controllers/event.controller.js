@@ -2,6 +2,7 @@ import {
   createEvent,
   getMovieEvent,
   listMovieEvents,
+  listShowEvents,
   updateEvent,
 } from '../services/event.service.js'
 
@@ -25,6 +26,16 @@ export async function listMovies(req, res) {
   } catch (error) {
     console.error(error)
     return res.status(500).json({ message: 'Erro ao listar filmes.' })
+  }
+}
+
+export async function listShows(req, res) {
+  try {
+    const shows = await listShowEvents()
+    return res.status(200).json(shows)
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({ message: 'Erro ao listar shows.' })
   }
 }
 

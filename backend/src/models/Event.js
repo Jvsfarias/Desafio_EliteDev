@@ -23,16 +23,18 @@ const sessionSchema = new mongoose.Schema(
 
 const seatMapSchema = new mongoose.Schema(
   {
-    rows: {
-      type: Number,
-      required: true,
-      min: 1,
-    },
-    cols: {
-      type: Number,
-      required: true,
-      min: 1,
-    },
+    rows: { type: Number, required: true, min: 1 },
+    cols: { type: Number, required: true, min: 1 },
+  },
+  { _id: false }
+)
+
+const areaSchema = new mongoose.Schema(
+  {
+    key: { type: String, required: true, trim: true },
+    label: { type: String, required: true, trim: true },
+    capacity: { type: Number, required: true, min: 0 },
+    price: { type: Number, required: true, min: 0 },
   },
   { _id: false }
 )
@@ -55,6 +57,11 @@ const eventSchema = new mongoose.Schema(
       required: true,
     },
     image: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    description: {
       type: String,
       trim: true,
       default: '',
@@ -85,8 +92,22 @@ const eventSchema = new mongoose.Schema(
     },
     price: {
       type: Number,
-      required: true,
+      default: 0,
       min: 0,
+    },
+    showDate: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    showTime: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    areas: {
+      type: [areaSchema],
+      default: undefined,
     },
     seatMap: {
       type: seatMapSchema,

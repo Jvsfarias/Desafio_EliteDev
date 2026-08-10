@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/common/Navbar'
 import SeatMapPreview from '../components/events/SeatMapPreview'
+import ShowVenueMap from '../components/events/ShowVenueMap'
 import { useAuth } from '../contexts/AuthContext'
 import { AGE_RATINGS, DEFAULT_AGE_RATING } from '../data/ageRatings'
 import { CINEMA_SEAT_MAP } from '../data/seatMap'
+import { SHOW_AREAS, createEmptyAreas } from '../data/showAreas'
 import { catalogService } from '../services/catalogService'
 import { eventService } from '../services/eventService'
 
@@ -16,19 +18,31 @@ export default function CreateEvent() {
   const navigate = useNavigate()
   const { token } = useAuth()
   const [mode, setMode] = useState('cinema')
+
+  // Cinema state
   const [catalog, setCatalog] = useState([])
-  const [shows, setShows] = useState([])
   const [catalogItemId, setCatalogItemId] = useState('')
-  const [showItemId, setShowItemId] = useState('')
   const [rating, setRating] = useState(DEFAULT_AGE_RATING)
   const [venue, setVenue] = useState('')
   const [price, setPrice] = useState('')
   const [sessions, setSessions] = useState([createEmptySession()])
+  const [loadingCatalog, setLoadingCatalog] = useState(true)
+
+  // Show state
+  const [shows, setShows] = useState([])
+  const [showItemId, setShowItemId] = useState('')
+  const [showVenue, setShowVenue] = useState('')
+  const [showDate, setShowDate] = useState('')
+  const [showTime, setShowTime] = useState('')
+  const [showDescription, setShowDescription] = useState('')
+  const [areas, setAreas] = useState(createEmptyAreas())
+  const [activeAreaKey, setActiveAreaKey] = useState(null)
+  const [loadingShows, setLoadingShows] = useState(false)
+
+  // Shared
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
-  const [loadingCatalog, setLoadingCatalog] = useState(true)
-  const [loadingShows, setLoadingShows] = useState(false)
 
   const movies = catalog.filter((item) => item.type === 'filme')
 
@@ -46,25 +60,16 @@ export default function CreateEvent() {
 
       try {
         const items = await catalogService.listMovies(token)
-        if (active) {
-          setCatalog(items)
-        }
+        if (active) setCatalog(items)
       } catch {
-        if (active) {
-          setError('Não foi possível carregar o catálogo.')
-        }
+        if (active) setError('Não foi possível carregar o catálogo.')
       } finally {
-        if (active) {
-          setLoadingCatalog(false)
-        }
+        if (active) setLoadingCatalog(false)
       }
     }
 
     loadCatalog()
-
-    return () => {
-      active = false
-    }
+    return () => { active = false }
   }, [token])
 
   useEffect(() => {
@@ -78,27 +83,19 @@ export default function CreateEvent() {
 
       try {
         const items = await catalogService.listShows(token)
-        if (active) {
-          setShows(items)
-        }
+        if (active) setShows(items)
       } catch (err) {
-        if (active) {
-          setError(err.message || 'Não foi possível carregar os shows.')
-        }
+        if (active) setError(err.message || 'Não foi possível carregar os shows.')
       } finally {
-        if (active) {
-          setLoadingShows(false)
-        }
+        if (active) setLoadingShows(false)
       }
     }
 
     loadShows()
-
-    return () => {
-      active = false
-    }
+    return () => { active = false }
   }, [mode, token, shows.length])
 
+  // Cinema helpers
   function updateSession(index, patch) {
     setSessions((current) =>
       current.map((session, i) => (i === index ? { ...session, ...patch } : session)),
@@ -138,23 +135,22 @@ export default function CreateEvent() {
       current.map((session, i) => {
         if (i !== sessionIndex) return session
         if (session.times.length === 1) return session
-        return {
-          ...session,
-          times: session.times.filter((_, j) => j !== timeIndex),
-        }
+        return { ...session, times: session.times.filter((_, j) => j !== timeIndex) }
       }),
     )
   }
 
-  async function handleSubmit(event) {
-    event.preventDefault()
+  // Area helper
+  function updateArea(key, field, value) {
+    setAreas((current) =>
+      current.map((area) => (area.key === key ? { ...area, [field]: value } : area)),
+    )
+  }
+
+  async function handleSubmitCinema(e) {
+    e.preventDefault()
     setError('')
     setSuccess('')
-
-    if (mode !== 'cinema') {
-      setError('Cadastro de shows ainda não está disponível.')
-      return
-    }
 
     const selected = movies.find((item) => item.id === catalogItemId)
 
@@ -215,7 +211,73 @@ export default function CreateEvent() {
       setVenue('')
       setPrice('')
       setSessions([createEmptySession()])
+      setTimeout(() => navigate('/'), 900)
+    } catch (err) {
+      setError(err.message || 'Não foi possível criar o evento.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
+  async function handleSubmitShow(e) {
+    e.preventDefault()
+    setError('')
+    setSuccess('')
+
+    const selected = shows.find((item) => item.id === showItemId)
+
+    if (!selected) {
+      setError('Selecione um show do catálogo.')
+      return
+    }
+
+    if (!showVenue) {
+      setError('Informe o local do evento.')
+      return
+    }
+
+    if (!showDate || !showTime) {
+      setError('Informe data e horário do show.')
+      return
+    }
+
+    const normalizedAreas = areas.map((area) => ({
+      key: area.key,
+      label: area.label,
+      capacity: Number(area.capacity) || 0,
+      price: Number(area.price) || 0,
+    }))
+
+    if (normalizedAreas.every((a) => a.capacity === 0)) {
+      setError('Defina a capacidade de ao menos uma área.')
+      return
+    }
+
+    setLoading(true)
+
+    try {
+      await eventService.create(
+        {
+          catalogItemId: selected.id,
+          title: selected.title,
+          type: 'show',
+          image: selected.image,
+          description: showDescription,
+          venue: showVenue,
+          showDate,
+          showTime,
+          areas: normalizedAreas,
+        },
+        token,
+      )
+
+      setSuccess('Show cadastrado com sucesso.')
+      setShowItemId('')
+      setShowVenue('')
+      setShowDate('')
+      setShowTime('')
+      setShowDescription('')
+      setAreas(createEmptyAreas())
       setTimeout(() => navigate('/'), 900)
     } catch (err) {
       setError(err.message || 'Não foi possível criar o evento.')
@@ -231,7 +293,7 @@ export default function CreateEvent() {
       <main className="create-event__main">
         <header className="create-event__header">
           <h1>Criar evento</h1>
-          <p>Monte a programação de cinema com várias datas, horários e mapa de assentos.</p>
+          <p>Monte a programação com sessões de cinema ou um show com mapa de áreas.</p>
         </header>
 
         <div className="create-event__toggle" role="tablist" aria-label="Tipo de evento">
@@ -240,7 +302,7 @@ export default function CreateEvent() {
             role="tab"
             aria-selected={mode === 'cinema'}
             className={`create-event__toggle-btn ${mode === 'cinema' ? 'is-active' : ''}`}
-            onClick={() => setMode('cinema')}
+            onClick={() => { setMode('cinema'); setError('') }}
           >
             Cinema
           </button>
@@ -249,21 +311,24 @@ export default function CreateEvent() {
             role="tab"
             aria-selected={mode === 'show'}
             className={`create-event__toggle-btn ${mode === 'show' ? 'is-active' : ''}`}
-            onClick={() => setMode('show')}
+            onClick={() => { setMode('show'); setError('') }}
           >
             Show
           </button>
         </div>
 
+        {/* ========== SHOW FORM ========== */}
         {mode === 'show' ? (
-          <div className="auth-form create-event__form">
+          <form className="auth-form create-event__form" onSubmit={handleSubmitShow}>
             {error ? <p className="auth-form__error">{error}</p> : null}
+            {success ? <p className="create-event__success">{success}</p> : null}
 
             <label className="auth-form__field">
-              <span>Show</span>
+              <span>Show / artista</span>
               <select
                 value={showItemId}
                 onChange={(e) => setShowItemId(e.target.value)}
+                required
                 disabled={loadingShows}
               >
                 <option value="">
@@ -277,13 +342,115 @@ export default function CreateEvent() {
               </select>
             </label>
 
-            <p className="create-event__hint">
-              Por enquanto só o select do catálogo Ticketmaster está ativo. O cadastro
-              completo vem no próximo passo.
-            </p>
-          </div>
+            <label className="auth-form__field">
+              <span>Local do evento</span>
+              <input
+                type="text"
+                value={showVenue}
+                onChange={(e) => setShowVenue(e.target.value)}
+                placeholder="Ex.: Allianz Parque — São Paulo"
+                required
+              />
+            </label>
+
+            <div className="create-event__row">
+              <label className="auth-form__field">
+                <span>Data</span>
+                <input
+                  type="date"
+                  value={showDate}
+                  onChange={(e) => setShowDate(e.target.value)}
+                  required
+                />
+              </label>
+              <label className="auth-form__field">
+                <span>Horário</span>
+                <input
+                  type="time"
+                  value={showTime}
+                  onChange={(e) => setShowTime(e.target.value)}
+                  required
+                />
+              </label>
+            </div>
+
+            <section className="create-event__description" aria-label="Descrição do evento">
+              <div className="create-event__section-head">
+                <h2>Descrição do evento</h2>
+              </div>
+              <p className="create-event__hint">
+                Conte os detalhes do seu evento, como a programação e os diferenciais da
+                produção.
+              </p>
+              <label className="auth-form__field">
+                <textarea
+                  value={showDescription}
+                  onChange={(e) => setShowDescription(e.target.value)}
+                  placeholder="Adicione aqui a descrição do seu evento..."
+                  rows={6}
+                />
+              </label>
+            </section>
+
+            {/* Mapa visual */}
+            <section className="create-event__areas" aria-label="Áreas do venue">
+              <div className="create-event__section-head">
+                <h2>Mapa de áreas</h2>
+              </div>
+
+              <ShowVenueMap activeKey={activeAreaKey} />
+
+              <div className="create-event__areas-grid">
+                {SHOW_AREAS.map((areaDef) => {
+                  const area = areas.find((a) => a.key === areaDef.key)
+                  return (
+                    <div
+                      key={areaDef.key}
+                      className="create-event__area-row"
+                      onFocus={() => setActiveAreaKey(areaDef.key)}
+                      onBlur={() => setActiveAreaKey(null)}
+                    >
+                      <span
+                        className="create-event__area-dot"
+                        style={{ background: areaDef.color }}
+                      />
+                      <span className="create-event__area-label">{areaDef.label}</span>
+                      <label className="auth-form__field create-event__area-field">
+                        <span>Capacidade</span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={area?.capacity ?? ''}
+                          onChange={(e) => updateArea(areaDef.key, 'capacity', e.target.value)}
+                          placeholder="0"
+                        />
+                      </label>
+                      <label className="auth-form__field create-event__area-field">
+                        <span>Preço (R$)</span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={area?.price ?? ''}
+                          onChange={(e) => updateArea(areaDef.key, 'price', e.target.value)}
+                          placeholder="0,00"
+                        />
+                      </label>
+                    </div>
+                  )
+                })}
+              </div>
+            </section>
+
+            <button type="submit" className="auth-form__submit" disabled={loading}>
+              {loading ? 'Salvando...' : 'Criar show'}
+            </button>
+          </form>
+
         ) : (
-          <form className="auth-form create-event__form" onSubmit={handleSubmit}>
+        /* ========== CINEMA FORM ========== */
+          <form className="auth-form create-event__form" onSubmit={handleSubmitCinema}>
             {error ? <p className="auth-form__error">{error}</p> : null}
             {success ? <p className="create-event__success">{success}</p> : null}
 
@@ -382,9 +549,7 @@ export default function CreateEvent() {
                           <input
                             type="time"
                             value={time}
-                            onChange={(e) =>
-                              updateTime(sessionIndex, timeIndex, e.target.value)
-                            }
+                            onChange={(e) => updateTime(sessionIndex, timeIndex, e.target.value)}
                             required
                           />
                         </label>
