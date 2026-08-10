@@ -352,28 +352,30 @@ export default function MovieDetail() {
               </div>
 
               <div className="detail__checkout-actions">
-                {purchaseSuccess && ticketCode && (
+                {purchaseSuccess && ticketCode ? (
                   <div className="detail__ticket-link">
                     <p className="detail__success">Compra realizada! Bons filmes.</p>
-                    <Link to={`/ingresso/${ticketCode}`} className="btn btn--secondary">
-                      🎟️ Ver meu ingresso
+                    <Link to={`/ingresso/${ticketCode}`} className="btn btn--primary">
+                      Ver meu ingresso
                     </Link>
                   </div>
+                ) : (
+                  <>
+                    {purchaseError ? <p className="detail__error">{purchaseError}</p> : null}
+                    <button
+                      type="button"
+                      onClick={handlePurchase}
+                      disabled={purchasing || (!isAuthenticated ? false : !canPurchase)}
+                      className="btn btn--primary detail__buy-btn"
+                    >
+                      {purchasing
+                        ? 'Processando...'
+                        : isAuthenticated
+                          ? 'Comprar ingressos'
+                          : 'Entrar para comprar'}
+                    </button>
+                  </>
                 )}
-                {purchaseError && <p className="detail__error">{purchaseError}</p>}
-
-                <button
-                  type="button"
-                  onClick={handlePurchase}
-                  disabled={purchasing || (!isAuthenticated ? false : !canPurchase)}
-                  className="btn btn--primary detail__buy-btn"
-                >
-                  {purchasing
-                    ? 'Processando...'
-                    : isAuthenticated
-                      ? 'Comprar ingressos'
-                      : 'Entrar para comprar'}
-                </button>
               </div>
             </div>
           </section>

@@ -160,10 +160,10 @@ export default function TicketPage() {
           </div>
 
           <div className="ticket__footer">
-            <button type="button" className="btn btn--secondary" onClick={handleCopy}>
-              {copied ? 'Link copiado!' : '🔗 Compartilhar ingresso'}
+            <button type="button" className="btn btn--primary btn--block" onClick={handleCopy}>
+              {copied ? 'Link copiado!' : 'Compartilhar ingresso'}
             </button>
-            <Link to="/" className="btn btn--ghost">
+            <Link to="/" className="btn btn--ghost btn--block">
               Voltar ao início
             </Link>
           </div>
