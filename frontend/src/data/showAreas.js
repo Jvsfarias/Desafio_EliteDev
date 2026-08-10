@@ -16,3 +16,15 @@ export function createEmptyAreas() {
     price: '',
   }))
 }
+
+export function areasFromEvent(eventAreas = []) {
+  return SHOW_AREAS.map((area) => {
+    const saved = eventAreas.find((item) => item.key === area.key)
+    return {
+      key: area.key,
+      label: area.label,
+      capacity: saved?.capacity != null ? String(saved.capacity) : '',
+      price: saved?.price != null ? String(saved.price) : '',
+    }
+  })
+}

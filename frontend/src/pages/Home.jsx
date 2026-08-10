@@ -5,6 +5,7 @@ import Logo from '../components/common/Logo'
 import MovieCard from '../components/events/MovieCard'
 import EventCard from '../components/events/EventCard'
 import EditEventModal from '../components/events/EditEventModal'
+import EditShowModal from '../components/events/EditShowModal'
 import { useAuth } from '../contexts/AuthContext'
 import { eventService } from '../services/eventService'
 
@@ -75,6 +76,13 @@ export default function Home() {
   }, [])
 
   function handleEventSaved(updated) {
+    if (updated.type === 'show') {
+      setShows((current) =>
+        current.map((show) => (show.id === updated.id ? { ...show, ...updated } : show)),
+      )
+      return
+    }
+
     setMovies((current) =>
       current.map((movie) => (movie.id === updated.id ? { ...movie, ...updated } : movie)),
     )
@@ -163,14 +171,28 @@ export default function Home() {
         {!loadingShows && shows.length > 0 ? (
           <div className="listing__grid listing__grid--events">
             {shows.map((event, index) => (
-              <EventCard key={event.id} event={event} index={index} />
+              <EventCard
+                key={event.id}
+                event={event}
+                index={index}
+                canEdit={isOrganizer}
+                onEdit={setEditingEvent}
+              />
             ))}
           </div>
         ) : null}
       </section>
 
-      {editingEvent ? (
+      {editingEvent?.type === 'filme' ? (
         <EditEventModal
+          event={editingEvent}
+          onClose={() => setEditingEvent(null)}
+          onSaved={handleEventSaved}
+        />
+      ) : null}
+
+      {editingEvent?.type === 'show' ? (
+        <EditShowModal
           event={editingEvent}
           onClose={() => setEditingEvent(null)}
           onSaved={handleEventSaved}

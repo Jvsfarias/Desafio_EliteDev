@@ -978,6 +978,15 @@ a.navbar__login {
   transition: transform 0.25s ease, border-color 0.25s ease;
 }
 
+.event-card-wrap {
+  position: relative;
+  animation: fade-up 0.5s ease both;
+}
+
+.event-card-wrap .event-card {
+  animation: none;
+}
+
 .event-card:hover {
   transform: translateY(-4px);
   border-color: rgba(245, 197, 24, 0.35);
@@ -1524,6 +1533,10 @@ a.navbar__login {
   border-radius: calc(var(--radius) + 4px);
   box-shadow: var(--shadow);
   padding: 1.25rem 1.35rem 1.5rem;
+}
+
+.modal--wide {
+  width: min(720px, 100%);
 }
 
 .modal__header {

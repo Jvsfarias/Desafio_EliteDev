@@ -239,8 +239,16 @@ export async function getMovieEvent(id) {
 export async function updateEvent(id, payload) {
   const event = await Event.findById(id)
 
-  if (!event || event.type !== 'filme') {
-    throw createHttpError('Filme não encontrado.', 404)
+  if (!event) {
+    throw createHttpError('Evento não encontrado.', 404)
+  }
+
+  if (event.type === 'show') {
+    return updateShowEvent(event, payload)
+  }
+
+  if (event.type !== 'filme') {
+    throw createHttpError('Tipo de evento inválido.', 400)
   }
 
   const { rating, venue, price, sessions } = payload
@@ -261,6 +269,54 @@ export async function updateEvent(id, payload) {
   event.venue = String(venue).trim()
   event.price = parsedPrice
   event.sessions = normalizedSessions
+
+  await event.save()
+
+  return toPublicEvent(event)
+}
+
+async function updateShowEvent(event, payload) {
+  const { venue, description, showDate, showTime, areas } = payload
+
+  if (!venue) {
+    throw createHttpError('Informe o local do evento.', 400)
+  }
+
+  if (!showDate || !DATE_PATTERN.test(showDate)) {
+    throw createHttpError('Informe uma data válida para o show.', 400)
+  }
+
+  if (!showTime || !TIME_PATTERN.test(showTime)) {
+    throw createHttpError('Informe um horário válido para o show.', 400)
+  }
+
+  if (!Array.isArray(areas) || areas.length === 0) {
+    throw createHttpError('Defina ao menos uma área com capacidade e preço.', 400)
+  }
+
+  const normalizedAreas = areas.map((area, i) => {
+    const capacity = Number(area.capacity)
+    const price = Number(area.price)
+
+    if (!area.key || !area.label) {
+      throw createHttpError(`Área ${i + 1} inválida.`, 400)
+    }
+    if (!Number.isFinite(capacity) || capacity < 0) {
+      throw createHttpError(`Capacidade inválida na área "${area.label}".`, 400)
+    }
+    if (!Number.isFinite(price) || price < 0) {
+      throw createHttpError(`Preço inválido na área "${area.label}".`, 400)
+    }
+
+    return { key: String(area.key), label: String(area.label), capacity, price }
+  })
+
+  event.venue = String(venue).trim()
+  event.description = description ? String(description).trim() : ''
+  event.showDate = showDate
+  event.showTime = showTime
+  event.areas = normalizedAreas
+  event.capacity = normalizedAreas.reduce((sum, area) => sum + area.capacity, 0)
 
   await event.save()
 
