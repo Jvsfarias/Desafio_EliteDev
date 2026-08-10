@@ -13,7 +13,11 @@ export async function getTakenSeats(eventId, sessionDate, sessionTime) {
   return [...new Set(taken)]
 }
 
-export async function bookSeats({ eventId, sessionDate, sessionTime, seats, userId }) {
+export async function bookSeats({ eventId, sessionDate, sessionTime, seats, userId, userRole }) {
+  if (userRole === 'organizador') {
+    throw createHttpError('Organizadores não podem comprar ingressos.', 403)
+  }
+
   const event = await Event.findById(eventId)
 
   if (!event) {

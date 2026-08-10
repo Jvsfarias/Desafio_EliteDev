@@ -25,8 +25,16 @@ export async function book(req, res) {
     const { id: eventId } = req.params
     const { sessionDate, sessionTime, seats } = req.body
     const userId = req.user._id
+    const userRole = req.user.role
 
-    const result = await bookSeats({ eventId, sessionDate, sessionTime, seats, userId })
+    const result = await bookSeats({
+      eventId,
+      sessionDate,
+      sessionTime,
+      seats,
+      userId,
+      userRole,
+    })
     return res.status(201).json(result)
   } catch (error) {
     if (error.status) {

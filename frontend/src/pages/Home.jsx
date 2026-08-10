@@ -4,6 +4,8 @@ import Navbar from '../components/common/Navbar'
 import Logo from '../components/common/Logo'
 import MovieCard from '../components/events/MovieCard'
 import EventCard from '../components/events/EventCard'
+import EditEventModal from '../components/events/EditEventModal'
+import { useAuth } from '../contexts/AuthContext'
 import { events } from '../data/mockData'
 import { eventService } from '../services/eventService'
 
@@ -13,10 +15,12 @@ function scrollToSection(id) {
 
 export default function Home() {
   const location = useLocation()
+  const { isOrganizer } = useAuth()
   const [activeSection, setActiveSection] = useState('cinema')
   const [movies, setMovies] = useState([])
   const [loadingMovies, setLoadingMovies] = useState(true)
   const [moviesError, setMoviesError] = useState('')
+  const [editingEvent, setEditingEvent] = useState(null)
 
   function handleNavigate(section) {
     setActiveSection(section)
@@ -57,6 +61,12 @@ export default function Home() {
       active = false
     }
   }, [])
+
+  function handleEventSaved(updated) {
+    setMovies((current) =>
+      current.map((movie) => (movie.id === updated.id ? { ...movie, ...updated } : movie)),
+    )
+  }
 
   return (
     <div className="home">
@@ -110,7 +120,13 @@ export default function Home() {
         {!loadingMovies && movies.length > 0 ? (
           <div className="listing__grid listing__grid--movies">
             {movies.map((movie, index) => (
-              <MovieCard key={movie.id} movie={movie} index={index} />
+              <MovieCard
+                key={movie.id}
+                movie={movie}
+                index={index}
+                canEdit={isOrganizer}
+                onEdit={setEditingEvent}
+              />
             ))}
           </div>
         ) : null}
@@ -128,6 +144,14 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      {editingEvent ? (
+        <EditEventModal
+          event={editingEvent}
+          onClose={() => setEditingEvent(null)}
+          onSaved={handleEventSaved}
+        />
+      ) : null}
     </div>
   )
 }

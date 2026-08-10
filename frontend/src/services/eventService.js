@@ -26,4 +26,19 @@ export const eventService = {
       )
     }
   },
+
+  async update(id, payload, token) {
+    try {
+      const { data } = await api.put(`/events/${id}`, payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      return data
+    } catch (error) {
+      throw new Error(
+        getApiErrorMessage(error, 'Não foi possível atualizar o evento.'),
+      )
+    }
+  },
 }

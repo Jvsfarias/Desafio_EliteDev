@@ -10,7 +10,14 @@ function seatId(row, col) {
   return `${ROW_LABELS[row]}${col + 1}`
 }
 
-export default function SeatSelector({ rows, cols, taken = [], selected = [], onToggle }) {
+export default function SeatSelector({
+  rows,
+  cols,
+  taken = [],
+  selected = [],
+  onToggle,
+  readOnly = false,
+}) {
   function getStatus(row, col) {
     const id = seatId(row, col)
     if (taken.includes(id)) return STATUS.taken
@@ -19,7 +26,7 @@ export default function SeatSelector({ rows, cols, taken = [], selected = [], on
   }
 
   return (
-    <div className="seat-selector">
+    <div className={`seat-selector ${readOnly ? 'seat-selector--readonly' : ''}`}>
       <div className="seat-selector__screen">TELA</div>
 
       <div className="seat-selector__grid">
@@ -30,13 +37,14 @@ export default function SeatSelector({ rows, cols, taken = [], selected = [], on
             {Array.from({ length: cols }, (_, col) => {
               const id = seatId(row, col)
               const status = getStatus(row, col)
+              const isTaken = status === STATUS.taken
 
               return (
                 <button
                   key={id}
                   type="button"
-                  disabled={status === STATUS.taken}
-                  onClick={() => onToggle && onToggle(id)}
+                  disabled={readOnly || isTaken}
+                  onClick={() => !readOnly && onToggle?.(id)}
                   className={`seat-selector__seat seat-selector__seat--${status}`}
                   aria-label={`Assento ${id} - ${status}`}
                   title={id}
@@ -52,10 +60,12 @@ export default function SeatSelector({ rows, cols, taken = [], selected = [], on
           <span className="seat-selector__dot seat-selector__dot--available" />
           Disponível
         </span>
-        <span className="seat-selector__legend-item">
-          <span className="seat-selector__dot seat-selector__dot--selected" />
-          Selecionado
-        </span>
+        {!readOnly ? (
+          <span className="seat-selector__legend-item">
+            <span className="seat-selector__dot seat-selector__dot--selected" />
+            Selecionado
+          </span>
+        ) : null}
         <span className="seat-selector__legend-item">
           <span className="seat-selector__dot seat-selector__dot--taken" />
           Ocupado

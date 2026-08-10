@@ -174,3 +174,34 @@ export async function getMovieEvent(id) {
 
   return toPublicEvent(event)
 }
+
+export async function updateEvent(id, payload) {
+  const event = await Event.findById(id)
+
+  if (!event || event.type !== 'filme') {
+    throw createHttpError('Filme não encontrado.', 404)
+  }
+
+  const { rating, venue, price, sessions } = payload
+
+  if (!venue) {
+    throw createHttpError('Informe o local / sala.', 400)
+  }
+
+  const parsedPrice = Number(price)
+
+  if (!Number.isFinite(parsedPrice) || parsedPrice < 0) {
+    throw createHttpError('Preço inválido.', 400)
+  }
+
+  const normalizedSessions = normalizeCinemaSessions(sessions)
+
+  event.rating = rating ? String(rating).trim() : ''
+  event.venue = String(venue).trim()
+  event.price = parsedPrice
+  event.sessions = normalizedSessions
+
+  await event.save()
+
+  return toPublicEvent(event)
+}

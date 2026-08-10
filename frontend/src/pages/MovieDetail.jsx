@@ -86,7 +86,7 @@ function formatPrice(value) {
 
 export default function MovieDetail() {
   const { id } = useParams()
-  const { isAuthenticated, token } = useAuth()
+  const { isAuthenticated, token, isOrganizer } = useAuth()
   const navigate = useNavigate()
   const [state, dispatch] = useReducer(reducer, initialState)
   const seatsRef = useRef(null)
@@ -136,10 +136,19 @@ export default function MovieDetail() {
   }
 
   function handleToggleSeat(seatId) {
+    if (isOrganizer) return
     dispatch({ type: 'TOGGLE_SEAT', seatId })
   }
 
   async function handlePurchase() {
+    if (isOrganizer) {
+      dispatch({
+        type: 'PURCHASE_ERROR',
+        error: 'Organizadores não podem comprar ingressos.',
+      })
+      return
+    }
+
     if (!isAuthenticated) {
       navigate('/login')
       return
@@ -294,7 +303,16 @@ export default function MovieDetail() {
         {/* Mapa de assentos */}
         {selectedTime && (
           <section ref={seatsRef} className="detail__section container">
-            <h2 className="detail__section-title">Escolha seus assentos</h2>
+            <h2 className="detail__section-title">
+              {isOrganizer ? 'Mapa de assentos' : 'Escolha seus assentos'}
+            </h2>
+
+            {isOrganizer ? (
+              <p className="detail__organizer-note">
+                Conta de organizador: você pode visualizar a ocupação, mas não pode
+                comprar ingressos.
+              </p>
+            ) : null}
 
             {seatsLoading ? (
               <div className="detail-loading detail-loading--inline">
@@ -305,15 +323,16 @@ export default function MovieDetail() {
                 rows={seatMap.rows}
                 cols={seatMap.cols}
                 taken={takenSeats}
-                selected={selectedSeats}
-                onToggle={handleToggleSeat}
+                selected={isOrganizer ? [] : selectedSeats}
+                onToggle={isOrganizer ? undefined : handleToggleSeat}
+                readOnly={isOrganizer}
               />
             )}
           </section>
         )}
 
         {/* Resumo e compra */}
-        {selectedTime && !seatsLoading && (
+        {selectedTime && !seatsLoading && !isOrganizer && (
           <section className="detail__section container">
             <div className="detail__checkout">
               <div className="detail__checkout-info">
