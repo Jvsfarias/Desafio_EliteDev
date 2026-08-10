@@ -1,24 +1,6 @@
-/**
- * Catálogo temporário até a API externa ser definida.
- * Troque apenas esta implementação quando a API real estiver disponível.
- */
-const MOCK_CATALOG = [
-  {
-    id: 'movie-1',
-    title: 'Duna: Parte Dois',
-    type: 'filme',
-    rating: '14',
-    image:
-      'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=400&h=600&fit=crop',
-  },
-  {
-    id: 'movie-2',
-    title: 'Oppenheimer',
-    type: 'filme',
-    rating: '16',
-    image:
-      'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=400&h=600&fit=crop',
-  },
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
+
+const SHOW_CATALOG = [
   {
     id: 'show-1',
     title: 'Festival de Jazz no Parque',
@@ -35,8 +17,32 @@ const MOCK_CATALOG = [
   },
 ]
 
+async function parseError(response, fallbackMessage) {
+  try {
+    const data = await response.json()
+    return data.message || fallbackMessage
+  } catch {
+    return fallbackMessage
+  }
+}
+
 export const catalogService = {
-  async listCatalog() {
-    return MOCK_CATALOG
+  async listMovies(token) {
+    const response = await fetch(`${API_URL}/catalog/movies`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(await parseError(response, 'Não foi possível carregar os filmes.'))
+    }
+
+    return response.json()
+  },
+
+  async listCatalog(token) {
+    const movies = await this.listMovies(token)
+    return [...movies, ...SHOW_CATALOG]
   },
 }

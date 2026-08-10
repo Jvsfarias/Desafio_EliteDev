@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/common/Navbar'
 import SeatMapPreview from '../components/events/SeatMapPreview'
 import { useAuth } from '../contexts/AuthContext'
+import { AGE_RATINGS, DEFAULT_AGE_RATING } from '../data/ageRatings'
 import { CINEMA_SEAT_MAP } from '../data/seatMap'
 import { catalogService } from '../services/catalogService'
 import { eventService } from '../services/eventService'
@@ -17,6 +18,7 @@ export default function CreateEvent() {
   const [mode, setMode] = useState('cinema')
   const [catalog, setCatalog] = useState([])
   const [catalogItemId, setCatalogItemId] = useState('')
+  const [rating, setRating] = useState(DEFAULT_AGE_RATING)
   const [venue, setVenue] = useState('')
   const [price, setPrice] = useState('')
   const [sessions, setSessions] = useState([createEmptySession()])
@@ -31,8 +33,16 @@ export default function CreateEvent() {
     let active = true
 
     async function loadCatalog() {
+      if (!token) {
+        if (active) {
+          setLoadingCatalog(false)
+          setError('Faça login como organizador para carregar o catálogo.')
+        }
+        return
+      }
+
       try {
-        const items = await catalogService.listCatalog()
+        const items = await catalogService.listCatalog(token)
         if (active) {
           setCatalog(items)
         }
@@ -52,7 +62,7 @@ export default function CreateEvent() {
     return () => {
       active = false
     }
-  }, [])
+  }, [token])
 
   function updateSession(index, patch) {
     setSessions((current) =>
@@ -144,7 +154,18 @@ export default function CreateEvent() {
           title: selected.title,
           type: 'filme',
           image: selected.image,
-          rating: selected.rating,
+          rating,
+          originalTitle: selected.originalTitle,
+          overview: selected.overview,
+          backdrop: selected.backdrop,
+          releaseDate: selected.releaseDate,
+          voteAverage: selected.voteAverage,
+          voteCount: selected.voteCount,
+          popularity: selected.popularity,
+          originalLanguage: selected.originalLanguage,
+          genreIds: selected.genreIds,
+          genres: selected.genres,
+          adult: selected.adult,
           venue,
           price: Number(price),
           seatMap: CINEMA_SEAT_MAP,
@@ -155,6 +176,7 @@ export default function CreateEvent() {
 
       setSuccess('Sessões de cinema criadas com sucesso.')
       setCatalogItemId('')
+      setRating(DEFAULT_AGE_RATING)
       setVenue('')
       setPrice('')
       setSessions([createEmptySession()])
@@ -225,6 +247,21 @@ export default function CreateEvent() {
                 {movies.map((item) => (
                   <option key={item.id} value={item.id}>
                     {item.title}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="auth-form__field">
+              <span>Classificação indicativa</span>
+              <select
+                value={rating}
+                onChange={(e) => setRating(e.target.value)}
+                required
+              >
+                {AGE_RATINGS.map((item) => (
+                  <option key={item.value} value={item.value}>
+                    {item.label}
                   </option>
                 ))}
               </select>

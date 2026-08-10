@@ -10,6 +10,31 @@ function createHttpError(message, status) {
   return error
 }
 
+function buildMovieDetails(payload = {}) {
+  const tmdbId = Number(payload.catalogItemId || payload.tmdbId)
+
+  return {
+    tmdbId: Number.isFinite(tmdbId) ? tmdbId : undefined,
+    originalTitle: payload.originalTitle ? String(payload.originalTitle).trim() : '',
+    overview: payload.overview ? String(payload.overview).trim() : '',
+    backdrop: payload.backdrop ? String(payload.backdrop).trim() : '',
+    releaseDate: payload.releaseDate ? String(payload.releaseDate).trim() : '',
+    voteAverage: Number(payload.voteAverage) || 0,
+    voteCount: Number(payload.voteCount) || 0,
+    popularity: Number(payload.popularity) || 0,
+    originalLanguage: payload.originalLanguage
+      ? String(payload.originalLanguage).trim()
+      : '',
+    genreIds: Array.isArray(payload.genreIds)
+      ? payload.genreIds.map(Number).filter(Number.isFinite)
+      : [],
+    genres: Array.isArray(payload.genres)
+      ? payload.genres.map((genre) => String(genre).trim()).filter(Boolean)
+      : [],
+    adult: Boolean(payload.adult),
+  }
+}
+
 function toPublicEvent(event) {
   return {
     id: event._id.toString(),
@@ -18,6 +43,7 @@ function toPublicEvent(event) {
     type: event.type,
     image: event.image,
     rating: event.rating || '',
+    movieDetails: event.movieDetails || null,
     venue: event.venue,
     price: event.price,
     seatMap: event.seatMap,
@@ -57,7 +83,27 @@ function normalizeCinemaSessions(sessions) {
 }
 
 export async function createEvent(payload, organizer) {
-  const { catalogItemId, title, type, image, rating, venue, price, sessions } = payload
+  const {
+    catalogItemId,
+    title,
+    type,
+    image,
+    rating,
+    venue,
+    price,
+    sessions,
+    originalTitle,
+    overview,
+    backdrop,
+    releaseDate,
+    voteAverage,
+    voteCount,
+    popularity,
+    originalLanguage,
+    genreIds,
+    genres,
+    adult,
+  } = payload
 
   if (!catalogItemId || !title || !type || !venue) {
     throw createHttpError('Preencha todos os campos obrigatórios.', 400)
@@ -79,6 +125,20 @@ export async function createEvent(payload, organizer) {
 
   const normalizedSessions = normalizeCinemaSessions(sessions)
   const capacity = CINEMA_SEAT_MAP.rows * CINEMA_SEAT_MAP.cols
+  const movieDetails = buildMovieDetails({
+    catalogItemId,
+    originalTitle,
+    overview,
+    backdrop,
+    releaseDate,
+    voteAverage,
+    voteCount,
+    popularity,
+    originalLanguage,
+    genreIds,
+    genres,
+    adult,
+  })
 
   const event = await Event.create({
     catalogItemId: String(catalogItemId).trim(),
@@ -86,6 +146,7 @@ export async function createEvent(payload, organizer) {
     type: 'filme',
     image: image ? String(image).trim() : '',
     rating: rating ? String(rating).trim() : '',
+    movieDetails,
     venue: String(venue).trim(),
     price: parsedPrice,
     seatMap: CINEMA_SEAT_MAP,
