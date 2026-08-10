@@ -914,6 +914,442 @@ a.navbar__login {
   }
 }
 
+/* ====================================
+   Movie Detail
+   ==================================== */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+}
+
+.detail {
+  padding-bottom: 5rem;
+}
+
+.detail__hero {
+  position: relative;
+  overflow: hidden;
+  min-height: 420px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.detail__hero-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center top;
+  filter: blur(24px) brightness(0.3);
+  transform: scale(1.08);
+}
+
+.detail__hero-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  gap: 2.5rem;
+  align-items: flex-start;
+  padding-top: 2.5rem;
+  padding-bottom: 3rem;
+  width: 100%;
+}
+
+.detail__poster {
+  width: 200px;
+  min-width: 200px;
+  aspect-ratio: 2/3;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  flex-shrink: 0;
+}
+
+.detail__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.detail__back {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.15s;
+  width: fit-content;
+}
+
+.detail__back:hover {
+  color: var(--text);
+}
+
+.detail__rating {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 700;
+  font-size: 0.8rem;
+  border-radius: 6px;
+  padding: 0.2rem 0.6rem;
+  width: fit-content;
+}
+
+.detail__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.7rem, 4vw, 2.6rem);
+  line-height: 1.1;
+}
+
+.detail__genres {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.detail__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.detail__overview {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.65;
+  max-width: 560px;
+}
+
+/* Sections */
+.detail__section {
+  margin-top: 3rem;
+}
+
+.detail__section-title {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.detail__empty {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+/* Session dates */
+.detail__dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.detail__date-btn {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--text);
+  padding: 0.55rem 1.1rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.15s, border-color 0.15s;
+  text-transform: capitalize;
+}
+
+.detail__date-btn:hover {
+  border-color: var(--accent);
+}
+
+.detail__date-btn--active {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+  font-weight: 700;
+}
+
+/* Session times */
+.detail__times {
+  margin-top: 1.25rem;
+}
+
+.detail__times-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.65rem;
+  font-weight: 600;
+}
+
+.detail__times-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.detail__time-btn {
+  background: var(--bg-elevated);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 0.45rem 1rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.detail__time-btn:hover {
+  border-color: var(--accent);
+}
+
+.detail__time-btn--active {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+}
+
+/* ====================================
+   Seat Selector
+   ==================================== */
+.seat-selector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  overflow-x: auto;
+}
+
+.seat-selector__screen {
+  width: min(80%, 420px);
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0.4rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  color: var(--text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  box-shadow: 0 6px 18px rgba(245, 197, 24, 0.12);
+}
+
+.seat-selector__grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.seat-selector__row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.seat-selector__row-label {
+  width: 1.25rem;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.seat-selector__seat {
+  width: 26px;
+  height: 26px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.1s, background 0.15s;
+  flex-shrink: 0;
+}
+
+.seat-selector__seat:hover:not(:disabled) {
+  transform: scale(1.15);
+}
+
+.seat-selector__seat--available {
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.seat-selector__seat--selected {
+  background: var(--accent);
+}
+
+.seat-selector__seat--taken {
+  background: #3d1a1a;
+  border: 1px solid #6b2929;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.seat-selector__legend {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.seat-selector__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.seat-selector__dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.seat-selector__dot--available {
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.seat-selector__dot--selected {
+  background: var(--accent);
+}
+
+.seat-selector__dot--taken {
+  background: #3d1a1a;
+  border: 1px solid #6b2929;
+}
+
+/* ====================================
+   Checkout bar
+   ==================================== */
+.detail__checkout {
+  background: var(--bg-elevated);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.detail__checkout-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.detail__checkout-seats {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.detail__checkout-total {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.detail__checkout-hint {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.detail__checkout-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.detail__buy-btn {
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: var(--radius);
+}
+
+.detail__success {
+  color: #4ade80;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.detail__error {
+  color: #f87171;
+  font-size: 0.9rem;
+}
+
+/* Loading / error states */
+.detail-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 1rem;
+  color: var(--text-muted);
+}
+
+.detail-loading--inline {
+  min-height: auto;
+  padding: 3rem 0;
+}
+
+.detail-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 1.5rem;
+  color: var(--text-muted);
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--line);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* MovieCard as link */
+.movie-card {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.movie-card:hover .movie-card__poster img {
+  transform: scale(1.04);
+  transition: transform 0.3s;
+}
+
+/* ====================================
+   Media queries
+   ==================================== */
 @media (max-width: 720px) {
   .navbar__inner {
     flex-wrap: wrap;
@@ -949,5 +1385,29 @@ a.navbar__login {
 
   .listing__grid--movies {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .detail__hero-content {
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .detail__poster {
+    width: 140px;
+    min-width: 140px;
+  }
+
+  .detail__checkout {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .detail__checkout-actions {
+    align-items: stretch;
+  }
+
+  .detail__buy-btn {
+    width: 100%;
+    text-align: center;
   }
 }

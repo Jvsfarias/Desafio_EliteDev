@@ -162,3 +162,15 @@ export async function listMovieEvents() {
   const events = await Event.find({ type: 'filme' }).sort({ createdAt: -1 })
   return events.map(toPublicEvent)
 }
+
+export async function getMovieEvent(id) {
+  const event = await Event.findById(id)
+
+  if (!event || event.type !== 'filme') {
+    const error = new Error('Filme não encontrado.')
+    error.status = 404
+    throw error
+  }
+
+  return toPublicEvent(event)
+}

@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 const ratingClass = {
   L: 'rating--l',
   10: 'rating--10',
@@ -9,7 +11,8 @@ const ratingClass = {
 
 export default function MovieCard({ movie, index }) {
   return (
-    <article
+    <Link
+      to={`/filmes/${movie.id}`}
       className="movie-card"
       style={{ animationDelay: `${index * 60}ms` }}
     >
@@ -25,6 +28,6 @@ export default function MovieCard({ movie, index }) {
       <div className="movie-card__body">
         <h3 className="movie-card__title">{movie.title}</h3>
       </div>
-    </article>
+    </Link>
   )
 }

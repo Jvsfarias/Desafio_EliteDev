@@ -5,6 +5,7 @@ import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import CreateEvent from './pages/CreateEvent'
+import MovieDetail from './pages/MovieDetail'
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/cadastro" element={<Register />} />
+          <Route path="/filmes/:id" element={<MovieDetail />} />
           <Route
             path="/eventos/novo"
             element={
