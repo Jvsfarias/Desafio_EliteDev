@@ -1,5 +1,6 @@
+import { api, getApiErrorMessage } from './api'
+
 const STORAGE_KEY = 'elitedev_auth'
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
 
 function readStorage() {
   try {
@@ -18,27 +19,13 @@ function clearStorage() {
   localStorage.removeItem(STORAGE_KEY)
 }
 
-async function parseError(response, fallbackMessage) {
-  try {
-    const data = await response.json()
-    return data.message || fallbackMessage
-  } catch {
-    return fallbackMessage
-  }
-}
-
 async function request(path, body, fallbackError) {
-  const response = await fetch(`${API_URL}${path}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  })
-
-  if (!response.ok) {
-    throw new Error(await parseError(response, fallbackError))
+  try {
+    const { data } = await api.post(path, body)
+    return data
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error, fallbackError))
   }
-
-  return response.json()
 }
 
 export const authService = {

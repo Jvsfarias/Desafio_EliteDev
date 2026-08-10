@@ -1,3 +1,5 @@
+import axios from 'axios'
+
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p'
 
 const GENRE_NAMES = {
@@ -68,22 +70,24 @@ export async function listPopularMovies() {
     throw createHttpError('TMDB_BEARER_TOKEN não configurado.', 500)
   }
 
-  const response = await fetch(
-    'https://api.themoviedb.org/3/movie/popular?language=pt-BR',
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/json',
-      },
-    }
-  )
+  try {
+    const { data } = await axios.get(
+      'https://api.themoviedb.org/3/movie/popular',
+      {
+        params: { language: 'pt-BR' },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+        },
+      }
+    )
 
-  if (!response.ok) {
-    throw createHttpError('Falha ao buscar filmes na TMDB.', response.status)
+    const results = Array.isArray(data.results) ? data.results : []
+    return results.map(mapTmdbMovie)
+  } catch (error) {
+    throw createHttpError(
+      'Falha ao buscar filmes na TMDB.',
+      error.response?.status || 500
+    )
   }
-
-  const data = await response.json()
-  const results = Array.isArray(data.results) ? data.results : []
-
-  return results.map(mapTmdbMovie)
 }
