@@ -976,6 +976,9 @@ a.navbar__login {
   box-shadow: var(--shadow);
   animation: fade-up 0.5s ease both;
   transition: transform 0.25s ease, border-color 0.25s ease;
+  text-decoration: none;
+  color: inherit;
+  display: block;
 }
 
 .event-card-wrap {
@@ -1608,6 +1611,113 @@ a.navbar__login {
   margin-bottom: 1.25rem;
 }
 
+.detail__poster--show {
+  aspect-ratio: 16 / 10;
+  width: 280px;
+  min-width: 220px;
+}
+
+.detail__overview--full {
+  max-width: none;
+  white-space: pre-wrap;
+}
+
+.show-detail__layout {
+  display: grid;
+  grid-template-columns: minmax(240px, 360px) 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.show-detail__areas {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.show-detail__area {
+  display: grid;
+  grid-template-columns: 12px 1fr auto;
+  gap: 0.85rem;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.show-detail__area:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.show-detail__area.is-active {
+  border-color: var(--accent);
+  background: rgba(245, 197, 24, 0.08);
+}
+
+.show-detail__area.is-soldout,
+.show-detail__area:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.show-detail__area-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.show-detail__area-info {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.show-detail__area-info strong {
+  font-size: 0.95rem;
+}
+
+.show-detail__area-info small {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.show-detail__area-price {
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.show-detail__qty {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0.55rem 0;
+  max-width: 140px;
+}
+
+.show-detail__qty span {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.show-detail__qty input {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 0.55rem 0.75rem;
+  outline: none;
+}
+
+.show-detail__qty input:focus {
+  border-color: var(--accent);
+}
+
 .seat-selector--readonly .seat-selector__seat--available {
   cursor: default;
 }
@@ -1678,5 +1788,15 @@ a.navbar__login {
   .detail__buy-btn {
     width: 100%;
     text-align: center;
+  }
+
+  .show-detail__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .detail__poster--show {
+    width: 100%;
+    min-width: 0;
+    max-width: 320px;
   }
 }

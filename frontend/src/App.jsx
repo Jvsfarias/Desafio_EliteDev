@@ -6,6 +6,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import CreateEvent from './pages/CreateEvent'
 import MovieDetail from './pages/MovieDetail'
+import ShowDetail from './pages/ShowDetail'
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
               </RequireRole>
             }
           />
+          <Route path="/eventos/:id" element={<ShowDetail />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

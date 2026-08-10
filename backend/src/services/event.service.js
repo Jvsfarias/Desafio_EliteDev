@@ -236,6 +236,26 @@ export async function getMovieEvent(id) {
   return toPublicEvent(event)
 }
 
+export async function getShowEvent(id) {
+  const event = await Event.findById(id)
+
+  if (!event || event.type !== 'show') {
+    throw createHttpError('Show não encontrado.', 404)
+  }
+
+  return toPublicEvent(event)
+}
+
+export async function getEventById(id) {
+  const event = await Event.findById(id)
+
+  if (!event) {
+    throw createHttpError('Evento não encontrado.', 404)
+  }
+
+  return toPublicEvent(event)
+}
+
 export async function updateEvent(id, payload) {
   const event = await Event.findById(id)
 

@@ -6,7 +6,7 @@ export const bookingService = {
       const { data } = await api.get(`/events/${id}`)
       return data
     } catch (error) {
-      throw new Error(getApiErrorMessage(error, 'Filme não encontrado.'))
+      throw new Error(getApiErrorMessage(error, 'Evento não encontrado.'))
     }
   },
 
@@ -21,11 +21,33 @@ export const bookingService = {
     }
   },
 
+  async getAreas(eventId) {
+    try {
+      const { data } = await api.get(`/events/${eventId}/areas`)
+      return data.areas
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error, 'Erro ao carregar áreas.'))
+    }
+  },
+
   async book({ eventId, sessionDate, sessionTime, seats, token }) {
     try {
       const { data } = await api.post(
         `/events/${eventId}/book`,
         { sessionDate, sessionTime, seats },
+        { headers: { Authorization: `Bearer ${token}` } },
+      )
+      return data
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error, 'Não foi possível realizar a compra.'))
+    }
+  },
+
+  async bookShow({ eventId, areaKey, quantity, token }) {
+    try {
+      const { data } = await api.post(
+        `/events/${eventId}/book`,
+        { areaKey, quantity },
         { headers: { Authorization: `Bearer ${token}` } },
       )
       return data

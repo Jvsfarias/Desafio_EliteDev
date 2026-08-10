@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 function formatShowDate(dateStr, timeStr) {
   if (!dateStr) return ''
 
@@ -38,7 +40,7 @@ export default function EventCard({ event, index, canEdit = false, onEdit }) {
         </button>
       ) : null}
 
-      <article className="event-card">
+      <Link to={`/eventos/${event.id}`} className="event-card">
         <div className="event-card__media">
           <img src={event.image} alt={event.title} loading="lazy" />
         </div>
@@ -50,7 +52,7 @@ export default function EventCard({ event, index, canEdit = false, onEdit }) {
           <h3 className="event-card__title">{event.title}</h3>
           <p className="event-card__venue">{event.venue}</p>
         </div>
-      </article>
+      </Link>
     </div>
   )
 }

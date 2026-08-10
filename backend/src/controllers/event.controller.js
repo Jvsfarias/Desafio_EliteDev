@@ -1,6 +1,6 @@
 import {
   createEvent,
-  getMovieEvent,
+  getEventById,
   listMovieEvents,
   listShowEvents,
   updateEvent,
@@ -39,16 +39,16 @@ export async function listShows(req, res) {
   }
 }
 
-export async function getMovie(req, res) {
+export async function getById(req, res) {
   try {
-    const event = await getMovieEvent(req.params.id)
+    const event = await getEventById(req.params.id)
     return res.status(200).json(event)
   } catch (error) {
     if (error.status) {
       return res.status(error.status).json({ message: error.message })
     }
     console.error(error)
-    return res.status(500).json({ message: 'Erro ao buscar filme.' })
+    return res.status(500).json({ message: 'Erro ao buscar evento.' })
   }
 }
 

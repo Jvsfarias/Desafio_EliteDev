@@ -13,6 +13,38 @@ export async function getTakenSeats(eventId, sessionDate, sessionTime) {
   return [...new Set(taken)]
 }
 
+export async function getAreaAvailability(eventId) {
+  const event = await Event.findById(eventId)
+
+  if (!event || event.type !== 'show') {
+    throw createHttpError('Show não encontrado.', 404)
+  }
+
+  const bookings = await Booking.find({
+    eventId,
+    areaKey: { $ne: '' },
+  })
+
+  const soldByArea = {}
+  for (const booking of bookings) {
+    soldByArea[booking.areaKey] = (soldByArea[booking.areaKey] || 0) + booking.quantity
+  }
+
+  return (event.areas || []).map((area) => {
+    const sold = soldByArea[area.key] || 0
+    const remaining = Math.max(area.capacity - sold, 0)
+
+    return {
+      key: area.key,
+      label: area.label,
+      capacity: area.capacity,
+      sold,
+      remaining,
+      price: area.price,
+    }
+  })
+}
+
 export async function bookSeats({ eventId, sessionDate, sessionTime, seats, userId, userRole }) {
   if (userRole === 'organizador') {
     throw createHttpError('Organizadores não podem comprar ingressos.', 403)
@@ -22,6 +54,10 @@ export async function bookSeats({ eventId, sessionDate, sessionTime, seats, user
 
   if (!event) {
     throw createHttpError('Evento não encontrado.', 404)
+  }
+
+  if (event.type !== 'filme') {
+    throw createHttpError('Reserva de assentos disponível apenas para filmes.', 400)
   }
 
   const session = event.sessions.find((s) => s.date === sessionDate)
@@ -75,6 +111,62 @@ export async function bookSeats({ eventId, sessionDate, sessionTime, seats, user
     sessionTime: booking.sessionTime,
     seats: booking.seats,
     totalPrice: booking.totalPrice,
+    createdAt: booking.createdAt,
+  }
+}
+
+export async function bookShowArea({ eventId, areaKey, quantity, userId, userRole }) {
+  if (userRole === 'organizador') {
+    throw createHttpError('Organizadores não podem comprar ingressos.', 403)
+  }
+
+  const event = await Event.findById(eventId)
+
+  if (!event || event.type !== 'show') {
+    throw createHttpError('Show não encontrado.', 404)
+  }
+
+  const qty = Number(quantity)
+  if (!Number.isInteger(qty) || qty < 1) {
+    throw createHttpError('Informe uma quantidade válida.', 400)
+  }
+
+  const area = (event.areas || []).find((item) => item.key === areaKey)
+  if (!area) {
+    throw createHttpError('Área não encontrada.', 404)
+  }
+
+  if (area.capacity <= 0) {
+    throw createHttpError('Esta área não está disponível para venda.', 400)
+  }
+
+  const availability = await getAreaAvailability(eventId)
+  const selected = availability.find((item) => item.key === areaKey)
+
+  if (!selected || selected.remaining < qty) {
+    throw createHttpError(
+      `Ingressos insuficientes. Disponíveis: ${selected?.remaining ?? 0}.`,
+      409
+    )
+  }
+
+  const totalPrice = area.price * qty
+
+  const booking = await Booking.create({
+    eventId,
+    areaKey,
+    quantity: qty,
+    userId,
+    totalPrice,
+  })
+
+  return {
+    id: booking._id.toString(),
+    eventId: booking.eventId.toString(),
+    areaKey: booking.areaKey,
+    quantity: booking.quantity,
+    totalPrice: booking.totalPrice,
+    remaining: selected.remaining - qty,
     createdAt: booking.createdAt,
   }
 }
