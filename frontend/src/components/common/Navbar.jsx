@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import Logo from './Logo'
 import { useAuth } from '../../contexts/AuthContext'
 import { getRoleLabel } from '../../data/roles'
@@ -10,8 +10,18 @@ function formatName(name = '') {
 }
 
 export default function Navbar({ activeSection, onNavigate }) {
-  const { user, isAuthenticated, logout } = useAuth()
+  const navigate = useNavigate()
+  const { user, isAuthenticated, isOrganizer, logout } = useAuth()
   const showRole = user?.role && user.role !== 'cliente'
+
+  function handleSectionNavigate(section) {
+    if (onNavigate) {
+      onNavigate(section)
+      return
+    }
+
+    navigate(`/#${section}`)
+  }
 
   return (
     <header className="navbar">
@@ -24,17 +34,22 @@ export default function Navbar({ activeSection, onNavigate }) {
           <button
             type="button"
             className={`navbar__link ${activeSection === 'cinema' ? 'is-active' : ''}`}
-            onClick={() => onNavigate('cinema')}
+            onClick={() => handleSectionNavigate('cinema')}
           >
             Cinema
           </button>
           <button
             type="button"
             className={`navbar__link ${activeSection === 'eventos' ? 'is-active' : ''}`}
-            onClick={() => onNavigate('eventos')}
+            onClick={() => handleSectionNavigate('eventos')}
           >
             Eventos
           </button>
+          {isOrganizer ? (
+            <Link to="/eventos/novo" className="navbar__action">
+              Criar evento
+            </Link>
+          ) : null}
         </nav>
 
         {isAuthenticated ? (

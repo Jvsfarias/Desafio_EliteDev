@@ -15,22 +15,15 @@ export default function MovieCard({ movie, index }) {
     >
       <div className="movie-card__poster">
         <img src={movie.image} alt={`Poster de ${movie.title}`} loading="lazy" />
-        <span className={`movie-card__rating ${ratingClass[movie.rating] || ''}`}>
-          {movie.rating}
-        </span>
+        {movie.rating ? (
+          <span className={`movie-card__rating ${ratingClass[movie.rating] || ''}`}>
+            {movie.rating}
+          </span>
+        ) : null}
       </div>
 
       <div className="movie-card__body">
-        <p className="movie-card__genre">{movie.genre}</p>
         <h3 className="movie-card__title">{movie.title}</h3>
-
-        <div className="movie-card__sessions">
-          {movie.showtimes.map((time) => (
-            <button type="button" key={time} className="movie-card__time">
-              {time}
-            </button>
-          ))}
-        </div>
       </div>
     </article>
   )
