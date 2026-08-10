@@ -1,9 +1,7 @@
+import Home from './pages/Home'
+
 function App() {
-  return (
-    <main>
-      <h1>Eventos e Ingressos</h1>
-    </main>
-  )
+  return <Home />
 }
 
 export default App
