@@ -1,4 +1,5 @@
 const STORAGE_KEY = 'elitedev_auth'
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
 
 function readStorage() {
   try {
@@ -17,62 +18,48 @@ function clearStorage() {
   localStorage.removeItem(STORAGE_KEY)
 }
 
-/** Mock: resolve role until the real API exists */
-function resolveMockRole(email) {
-  const value = email.toLowerCase()
-  if (value.startsWith('organizador@') || value.includes('+organizador@')) {
-    return 'organizador'
+async function parseError(response, fallbackMessage) {
+  try {
+    const data = await response.json()
+    return data.message || fallbackMessage
+  } catch {
+    return fallbackMessage
   }
-  if (value.startsWith('portaria@') || value.includes('+portaria@')) {
-    return 'portaria'
-  }
-  return 'cliente'
 }
 
-function delay(ms = 400) {
-  return new Promise((resolve) => setTimeout(resolve, ms))
+async function request(path, body, fallbackError) {
+  const response = await fetch(`${API_URL}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+
+  if (!response.ok) {
+    throw new Error(await parseError(response, fallbackError))
+  }
+
+  return response.json()
 }
 
-/**
- * Auth service shaped like the future API.
- * Swap internals for fetch() when the backend is ready.
- */
 export const authService = {
   async login({ email, password }) {
-    await delay()
     if (!email || !password) {
       throw new Error('Informe e-mail e senha.')
     }
 
-    const role = resolveMockRole(email)
-    const name = email.split('@')[0]
-
-    return {
-      token: `mock-token-${Date.now()}`,
-      user: {
-        id: `user-${role}`,
-        name,
-        email,
-        role,
-      },
-    }
+    return request('/auth/login', { email, password }, 'Não foi possível entrar.')
   },
 
   async register({ name, email, password }) {
-    await delay()
     if (!name || !email || !password) {
       throw new Error('Preencha todos os campos.')
     }
 
-    return {
-      token: `mock-token-${Date.now()}`,
-      user: {
-        id: `user-cliente-${Date.now()}`,
-        name,
-        email,
-        role: 'cliente',
-      },
-    }
+    return request(
+      '/auth/register',
+      { name, email, password },
+      'Não foi possível criar a conta.',
+    )
   },
 }
 
