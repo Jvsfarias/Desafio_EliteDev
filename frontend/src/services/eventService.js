@@ -23,6 +23,19 @@ export const eventService = {
     }
   },
 
+  async search(q, { limit = 20 } = {}) {
+    try {
+      const { data } = await api.get('/events/search', {
+        params: { q, limit },
+      })
+      return data.items || []
+    } catch (error) {
+      throw new Error(
+        getApiErrorMessage(error, 'Não foi possível buscar eventos.'),
+      )
+    }
+  },
+
   async create(payload, token) {
     try {
       const { data } = await api.post('/events', payload, {

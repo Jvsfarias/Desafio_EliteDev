@@ -14,6 +14,7 @@ import ShowDetail from './pages/ShowDetail'
 import TicketPage from './pages/TicketPage'
 import MyTickets from './pages/MyTickets'
 import PortariaPage from './pages/PortariaPage'
+import SearchPage from './pages/SearchPage'
 
 function App() {
   return (
@@ -76,6 +77,14 @@ function App() {
               element={
                 <BlockPortaria>
                   <Eventos />
+                </BlockPortaria>
+              }
+            />
+            <Route
+              path="/busca"
+              element={
+                <BlockPortaria>
+                  <SearchPage />
                 </BlockPortaria>
               }
             />

@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import Logo from './Logo'
+import NavbarSearch from './NavbarSearch'
 import UserMenu from './UserMenu'
 import { useAuth } from '../../contexts/AuthContext'
 
@@ -62,6 +63,8 @@ export default function Navbar() {
             </>
           ) : null}
         </nav>
+
+        {!isPortaria ? <NavbarSearch /> : null}
 
         {isAuthenticated ? (
           <UserMenu

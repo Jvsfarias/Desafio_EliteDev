@@ -5,6 +5,7 @@ import {
   getById,
   listMovies,
   listShows,
+  search,
   update,
 } from '../controllers/event.controller.js'
 import { book, getAreas, getSeats } from '../controllers/booking.controller.js'
@@ -14,6 +15,7 @@ const router = Router()
 
 router.get('/movies', listMovies)
 router.get('/shows', listShows)
+router.get('/search', search)
 router.get('/:id', getById)
 router.get('/:id/seats', getSeats)
 router.get('/:id/areas', getAreas)

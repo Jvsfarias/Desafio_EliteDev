@@ -4,6 +4,7 @@ import {
   getEventById,
   listMovieEvents,
   listShowEvents,
+  searchEvents,
   updateEvent,
 } from '../services/event.service.js'
 
@@ -37,6 +38,16 @@ export async function listShows(req, res) {
   } catch (error) {
     console.error(error)
     return res.status(500).json({ message: 'Erro ao listar shows.' })
+  }
+}
+
+export async function search(req, res) {
+  try {
+    const items = await searchEvents(req.query.q, { limit: req.query.limit })
+    return res.status(200).json({ items })
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({ message: 'Erro ao buscar eventos.' })
   }
 }
 

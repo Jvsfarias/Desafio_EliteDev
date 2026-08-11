@@ -230,6 +230,36 @@ export async function listShowEvents() {
   return events.map(toPublicEvent)
 }
 
+function escapeRegex(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+export async function searchEvents(query, { limit = 20 } = {}) {
+  await cleanupExpiredEvents()
+
+  const term = String(query || '').trim()
+  if (term.length < 2) {
+    return []
+  }
+
+  const safeLimit = Math.min(Math.max(Number(limit) || 20, 1), 50)
+  const pattern = new RegExp(escapeRegex(term), 'i')
+
+  const events = await Event.find({
+    $or: [
+      { title: pattern },
+      { venue: pattern },
+      { description: pattern },
+      { 'movieDetails.originalTitle': pattern },
+      { 'movieDetails.genres': pattern },
+    ],
+  })
+    .sort({ createdAt: -1 })
+    .limit(safeLimit)
+
+  return events.map(toPublicEvent)
+}
+
 export async function getMovieEvent(id) {
   let event = await Event.findById(id)
   event = await ensureEventIsActive(event)
