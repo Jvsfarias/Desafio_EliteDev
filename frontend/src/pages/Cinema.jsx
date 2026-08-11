@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import Navbar from '../components/common/Navbar'
+import Footer from '../components/common/Footer'
 import MovieCard from '../components/events/MovieCard'
 import EditEventModal from '../components/events/EditEventModal'
 import { useAuth } from '../contexts/AuthContext'
@@ -45,7 +46,6 @@ export default function Cinema() {
       <section className="listing listing--page">
         <div className="listing__header">
           <h2>Em cartaz</h2>
-          <p>Filmes em cartaz cadastrados pelo organizador.</p>
         </div>
 
         {loading ? <p className="listing__status">Carregando filmes...</p> : null}
@@ -77,6 +77,8 @@ export default function Cinema() {
           onSaved={handleEventSaved}
         />
       ) : null}
+
+      <Footer />
     </div>
   )
 }

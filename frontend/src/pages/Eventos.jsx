@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import Navbar from '../components/common/Navbar'
+import Footer from '../components/common/Footer'
 import EventCard from '../components/events/EventCard'
 import EditShowModal from '../components/events/EditShowModal'
 import { useAuth } from '../contexts/AuthContext'
@@ -45,7 +46,6 @@ export default function Eventos() {
       <section className="listing listing--page listing--events">
         <div className="listing__header">
           <h2>Eventos em destaque</h2>
-          <p>Shows cadastrados pelo organizador.</p>
         </div>
 
         {loading ? <p className="listing__status">Carregando shows...</p> : null}
@@ -77,6 +77,8 @@ export default function Eventos() {
           onSaved={handleEventSaved}
         />
       ) : null}
+
+      <Footer />
     </div>
   )
 }

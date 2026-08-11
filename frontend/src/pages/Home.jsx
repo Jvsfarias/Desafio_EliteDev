@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import Navbar from '../components/common/Navbar'
 import Logo from '../components/common/Logo'
+import Footer from '../components/common/Footer'
 import MovieCard from '../components/events/MovieCard'
 import EventCard from '../components/events/EventCard'
 import EditEventModal from '../components/events/EditEventModal'
@@ -108,7 +109,6 @@ export default function Home() {
       <section id="cinema" className="listing">
         <div className="listing__header">
           <h2>Em cartaz</h2>
-          <p>Filmes em cartaz cadastrados pelo organizador.</p>
         </div>
 
         {loadingMovies ? (
@@ -139,7 +139,6 @@ export default function Home() {
       <section id="eventos" className="listing listing--events">
         <div className="listing__header">
           <h2>Eventos em destaque</h2>
-          <p>Shows cadastrados pelo organizador.</p>
         </div>
 
         {loadingShows ? (
@@ -182,6 +181,8 @@ export default function Home() {
           onSaved={handleEventSaved}
         />
       ) : null}
+
+      <Footer />
     </div>
   )
 }
