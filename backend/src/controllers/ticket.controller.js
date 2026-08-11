@@ -56,7 +56,7 @@ export async function checkTicket(req, res) {
 export async function useTicket(req, res) {
   try {
     const { eventId } = req.body
-    const result = await validateTicket(req.params.code, eventId)
+    const result = await validateTicket(req.params.code, eventId, req.user._id)
     return res.status(200).json(result)
   } catch (error) {
     console.error(error)

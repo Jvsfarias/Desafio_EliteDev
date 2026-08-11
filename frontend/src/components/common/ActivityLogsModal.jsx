@@ -3,6 +3,8 @@ import { createPortal } from 'react-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { logService } from '../../services/logService'
 
+const PAGE_SIZE = 20
+
 function formatPrice(value) {
   return value?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) ?? ''
 }
@@ -36,6 +38,15 @@ function formatDetails(log) {
     ].filter(Boolean)
   }
 
+  if (log.action === 'event_cancel') {
+    return [
+      details.venue ? `Local: ${details.venue}` : null,
+      details.refundedTickets != null
+        ? `Ingressos reembolsados: ${details.refundedTickets}`
+        : null,
+    ].filter(Boolean)
+  }
+
   if (log.eventType === 'filme' || details.seats?.length) {
     return [
       details.sessionDate && details.sessionTime
@@ -63,11 +74,32 @@ const ACTION_LABEL = {
   cancellation: { text: 'Cancelamento', cls: 'activity-log__badge--cancel' },
   auto_removal: { text: 'Remoção automática', cls: 'activity-log__badge--auto' },
   event_cancel: { text: 'Evento cancelado', cls: 'activity-log__badge--event-cancel' },
+  ticket_validation: { text: 'Validação', cls: 'activity-log__badge--validation' },
+}
+
+const FILTER_OPTIONS = [
+  { value: 'all', label: 'Todos' },
+  { value: 'purchase', label: 'Compra' },
+  { value: 'cancellation', label: 'Cancelamento' },
+  { value: 'ticket_validation', label: 'Validação' },
+  { value: 'event_cancel', label: 'Evento cancelado' },
+  { value: 'auto_removal', label: 'Remoção automática' },
+]
+
+function actorLabel(action) {
+  if (action === 'ticket_validation') return 'Portaria'
+  if (action === 'event_cancel') return 'Organizador'
+  if (action === 'auto_removal') return 'Sistema'
+  return 'Cliente'
 }
 
 export default function ActivityLogsModal({ onClose }) {
   const { token } = useAuth()
   const [logs, setLogs] = useState([])
+  const [filter, setFilter] = useState('all')
+  const [page, setPage] = useState(1)
+  const [total, setTotal] = useState(0)
+  const [totalPages, setTotalPages] = useState(1)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -75,9 +107,19 @@ export default function ActivityLogsModal({ onClose }) {
     let active = true
 
     async function load() {
+      setLoading(true)
+      setError('')
+
       try {
-        const data = await logService.list(token)
-        if (active) setLogs(data)
+        const data = await logService.list(token, {
+          page,
+          limit: PAGE_SIZE,
+          action: filter,
+        })
+        if (!active) return
+        setLogs(data.items || [])
+        setTotal(data.total || 0)
+        setTotalPages(data.totalPages || 1)
       } catch (err) {
         if (active) setError(err.message)
       } finally {
@@ -89,7 +131,7 @@ export default function ActivityLogsModal({ onClose }) {
     return () => {
       active = false
     }
-  }, [token])
+  }, [token, page, filter])
 
   useEffect(() => {
     function handleKey(e) {
@@ -103,6 +145,11 @@ export default function ActivityLogsModal({ onClose }) {
       document.body.style.overflow = previousOverflow
     }
   }, [onClose])
+
+  function handleFilterChange(nextFilter) {
+    setFilter(nextFilter)
+    setPage(1)
+  }
 
   return createPortal(
     <div className="modal-overlay" onClick={onClose} role="presentation">
@@ -124,8 +171,23 @@ export default function ActivityLogsModal({ onClose }) {
         </header>
 
         <p className="activity-logs__hint">
-          Registro de compras, cancelamentos de clientes e cancelamentos de eventos.
+          Registro de compras, cancelamentos, validações na portaria e eventos.
         </p>
+
+        <div className="activity-logs__filters" role="tablist" aria-label="Filtrar por tipo">
+          {FILTER_OPTIONS.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              role="tab"
+              aria-selected={filter === option.value}
+              className={`activity-logs__filter ${filter === option.value ? 'is-active' : ''}`}
+              onClick={() => handleFilterChange(option.value)}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
 
         {loading ? (
           <div className="detail-loading">
@@ -138,53 +200,83 @@ export default function ActivityLogsModal({ onClose }) {
 
         {!loading && !error && logs.length === 0 ? (
           <div className="activity-logs__empty">
-            <p>Nenhum log registrado ainda.</p>
+            <p>
+              {total === 0 && filter === 'all'
+                ? 'Nenhum log registrado ainda.'
+                : 'Nenhum log neste filtro.'}
+            </p>
           </div>
         ) : null}
 
         {!loading && logs.length > 0 ? (
-          <div className="activity-logs__list">
-            {logs.map((log) => {
-              const action = ACTION_LABEL[log.action] || ACTION_LABEL.purchase
-              const details = formatDetails(log)
+          <>
+            <div className="activity-logs__list">
+              {logs.map((log) => {
+                const action = ACTION_LABEL[log.action] || ACTION_LABEL.purchase
+                const details = formatDetails(log)
 
-              return (
-                <article key={log.id} className="activity-log">
-                  <div className="activity-log__top">
-                    <span className={`activity-log__badge ${action.cls}`}>{action.text}</span>
-                    <time className="activity-log__time">{formatDateTime(log.createdAt)}</time>
-                  </div>
+                return (
+                  <article key={log.id} className="activity-log">
+                    <div className="activity-log__top">
+                      <span className={`activity-log__badge ${action.cls}`}>{action.text}</span>
+                      <time className="activity-log__time">{formatDateTime(log.createdAt)}</time>
+                    </div>
 
-                  <p className="activity-log__message">{log.message}</p>
+                    <p className="activity-log__message">{log.message}</p>
 
-                  <div className="activity-log__meta">
-                    <span>
-                      Cliente: <strong>{log.actorName}</strong>
-                      {log.actorEmail ? ` · ${log.actorEmail}` : ''}
-                    </span>
-                    {log.ticketCode ? (
+                    <div className="activity-log__meta">
                       <span>
-                        Ingresso: <strong>{log.ticketCode}</strong>
+                        {actorLabel(log.action)}: <strong>{log.actorName}</strong>
+                        {log.actorEmail ? ` · ${log.actorEmail}` : ''}
                       </span>
-                    ) : null}
-                    {log.totalPrice != null ? (
-                      <span>
-                        Total: <strong>{formatPrice(log.totalPrice)}</strong>
-                      </span>
-                    ) : null}
-                  </div>
+                      {log.ticketCode ? (
+                        <span>
+                          Ingresso: <strong>{log.ticketCode}</strong>
+                        </span>
+                      ) : null}
+                      {log.totalPrice != null && log.action !== 'ticket_validation' ? (
+                        <span>
+                          Total: <strong>{formatPrice(log.totalPrice)}</strong>
+                        </span>
+                      ) : null}
+                    </div>
 
-                  {details.length > 0 ? (
-                    <ul className="activity-log__details">
-                      {details.map((item) => (
-                        <li key={item}>{item}</li>
-                      ))}
-                    </ul>
-                  ) : null}
-                </article>
-              )
-            })}
-          </div>
+                    {details.length > 0 ? (
+                      <ul className="activity-log__details">
+                        {details.map((item) => (
+                          <li key={item}>{item}</li>
+                        ))}
+                      </ul>
+                    ) : null}
+                  </article>
+                )
+              })}
+            </div>
+
+            <div className="activity-logs__pagination">
+              <p className="activity-logs__pagination-info">
+                Página {page} de {totalPages} · {total} registro{total === 1 ? '' : 's'}
+              </p>
+              <div className="activity-logs__pagination-actions">
+                <button
+                  type="button"
+                  className="activity-logs__page-btn"
+                  onClick={() => setPage((current) => Math.max(current - 1, 1))}
+                  disabled={page <= 1 || loading}
+                >
+                  Anterior
+                </button>
+                <button
+                  type="button"
+                  className="activity-logs__page-btn"
+                  onClick={() => setPage((current) => Math.min(current + 1, totalPages))}
+                  disabled={page >= totalPages || loading}
+                >
+                  Próxima
+                </button>
+              </div>
+            </div>
+          </>
         ) : null}
       </div>
     </div>,

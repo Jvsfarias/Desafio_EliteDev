@@ -1978,6 +1978,37 @@ a.navbar__login {
   margin-bottom: 1rem;
 }
 
+.activity-logs__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 1rem;
+}
+
+.activity-logs__filter {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.activity-logs__filter:hover {
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.activity-logs__filter.is-active {
+  color: var(--accent-ink);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
 .activity-logs__empty {
   padding: 1.5rem;
   border: 1px dashed var(--line);
@@ -1992,6 +2023,50 @@ a.navbar__login {
   gap: 0.75rem;
   overflow: auto;
   padding-right: 0.25rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.activity-logs__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--line);
+}
+
+.activity-logs__pagination-info {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.activity-logs__pagination-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.activity-logs__page-btn {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.activity-logs__page-btn:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.activity-logs__page-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .activity-log {
@@ -2042,6 +2117,12 @@ a.navbar__login {
   color: #fdba74;
   background: rgba(249, 115, 22, 0.12);
   border: 1px solid rgba(249, 115, 22, 0.35);
+}
+
+.activity-log__badge--validation {
+  color: #5eead4;
+  background: rgba(20, 184, 166, 0.12);
+  border: 1px solid rgba(20, 184, 166, 0.35);
 }
 
 .activity-log__time {

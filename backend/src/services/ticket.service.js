@@ -1,6 +1,6 @@
 import Ticket from '../models/Ticket.js'
 import Booking from '../models/Booking.js'
-import { logCancellation } from './log.service.js'
+import { logCancellation, logTicketValidation } from './log.service.js'
 
 function createHttpError(message, status) {
   const error = new Error(message)
@@ -88,7 +88,7 @@ export async function cancelTicket(code, userId) {
   return toPublicTicket(ticket)
 }
 
-export async function validateTicket(code, eventId) {
+export async function validateTicket(code, eventId, actorUserId = null) {
   const ticket = await Ticket.findOne({ code: code.toUpperCase() })
 
   if (!ticket) {
@@ -126,6 +126,11 @@ export async function validateTicket(code, eventId) {
   ticket.status = 'used'
   ticket.usedAt = new Date()
   await ticket.save()
+
+  await logTicketValidation({
+    actorUserId,
+    ticket,
+  })
 
   return {
     valid: true,

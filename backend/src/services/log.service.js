@@ -54,10 +54,35 @@ export async function createActivityLog(payload) {
   return toPublicLog(log)
 }
 
-export async function listActivityLogs({ limit = 100 } = {}) {
-  const safeLimit = Math.min(Math.max(Number(limit) || 100, 1), 300)
-  const logs = await ActivityLog.find().sort({ createdAt: -1 }).limit(safeLimit)
-  return logs.map(toPublicLog)
+export async function listActivityLogs({
+  page = 1,
+  limit = 20,
+  action = null,
+} = {}) {
+  const safePage = Math.max(Number(page) || 1, 1)
+  const safeLimit = Math.min(Math.max(Number(limit) || 20, 1), 100)
+  const skip = (safePage - 1) * safeLimit
+
+  const filter = {}
+  if (action && action !== 'all') {
+    filter.action = action
+  }
+
+  const [logs, total] = await Promise.all([
+    ActivityLog.find(filter).sort({ createdAt: -1 }).skip(skip).limit(safeLimit),
+    ActivityLog.countDocuments(filter),
+  ])
+
+  const totalPages = Math.max(Math.ceil(total / safeLimit), 1)
+
+  return {
+    items: logs.map(toPublicLog),
+    page: safePage,
+    limit: safeLimit,
+    total,
+    totalPages,
+    hasMore: safePage < totalPages,
+  }
 }
 
 export async function logPurchase({
@@ -170,5 +195,49 @@ export async function logEventCancel({
       venue: event.venue,
     },
     message: `Evento "${event.title}" cancelado pelo organizador. ${refundedTickets} ingresso(s) reembolsado(s).`,
+  })
+}
+
+export async function logTicketValidation({
+  actorUserId,
+  ticket,
+}) {
+  const isCinema = ticket.seats?.length > 0
+  const details = isCinema
+    ? {
+        sessionDate: ticket.sessionDate,
+        sessionTime: ticket.sessionTime,
+        seats: ticket.seats,
+        venue: ticket.eventVenue,
+      }
+    : {
+        areaKey: ticket.areaKey,
+        areaLabel: ticket.areaLabel,
+        quantity: ticket.quantity,
+        venue: ticket.eventVenue,
+        showDate: ticket.eventDate,
+        showTime: ticket.eventTime,
+      }
+
+  const detailParts = isCinema
+    ? [
+        `sessão ${ticket.sessionDate || ''} ${ticket.sessionTime || ''}`.trim(),
+        `assentos ${(ticket.seats || []).join(', ')}`,
+      ]
+    : [
+        `área ${ticket.areaLabel || ticket.areaKey || ''}`,
+        `${ticket.quantity || 0} ingresso(s)`,
+      ]
+
+  return createActivityLog({
+    action: 'ticket_validation',
+    actorUserId,
+    eventId: ticket.eventId,
+    eventTitle: ticket.eventTitle,
+    eventType: isCinema ? 'filme' : 'show',
+    ticketCode: ticket.code,
+    totalPrice: ticket.totalPrice,
+    details,
+    message: `Ingresso ${ticket.code} validado na portaria para "${ticket.eventTitle}" (${detailParts.join(' · ')})`,
   })
 }
