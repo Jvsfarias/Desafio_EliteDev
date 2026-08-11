@@ -1,4 +1,5 @@
 import Ticket from '../models/Ticket.js'
+import Booking from '../models/Booking.js'
 
 function createHttpError(message, status) {
   const error = new Error(message)
@@ -23,6 +24,7 @@ function toPublicTicket(ticket) {
     totalPrice: ticket.totalPrice,
     status: ticket.status,
     usedAt: ticket.usedAt,
+    cancelledAt: ticket.cancelledAt,
     createdAt: ticket.createdAt,
   }
 }
@@ -30,6 +32,14 @@ function toPublicTicket(ticket) {
 export async function createTicket(data) {
   const ticket = await Ticket.create(data)
   return toPublicTicket(ticket)
+}
+
+export async function listTicketsByUser(userId, { status = 'active' } = {}) {
+  const filter = { userId }
+  if (status) filter.status = status
+
+  const tickets = await Ticket.find(filter).sort({ createdAt: -1 })
+  return tickets.map(toPublicTicket)
 }
 
 export async function getTicketByCode(code) {
@@ -42,11 +52,50 @@ export async function getTicketByCode(code) {
   return toPublicTicket(ticket)
 }
 
+export async function cancelTicket(code, userId) {
+  const ticket = await Ticket.findOne({ code: code.toUpperCase() })
+
+  if (!ticket) {
+    throw createHttpError('Ingresso não encontrado.', 404)
+  }
+
+  if (ticket.userId.toString() !== String(userId)) {
+    throw createHttpError('Este ingresso não pertence a você.', 403)
+  }
+
+  if (ticket.status === 'used') {
+    throw createHttpError('Ingresso já utilizado não pode ser cancelado.', 400)
+  }
+
+  if (ticket.status === 'cancelled') {
+    throw createHttpError('Ingresso já está cancelado.', 400)
+  }
+
+  if (ticket.bookingId) {
+    await Booking.findByIdAndDelete(ticket.bookingId)
+  }
+
+  ticket.status = 'cancelled'
+  ticket.cancelledAt = new Date()
+  await ticket.save()
+
+  return toPublicTicket(ticket)
+}
+
 export async function validateTicket(code, eventId) {
   const ticket = await Ticket.findOne({ code: code.toUpperCase() })
 
   if (!ticket) {
     return { valid: false, reason: 'invalid', message: 'Ingresso não encontrado.' }
+  }
+
+  if (ticket.status === 'cancelled') {
+    return {
+      valid: false,
+      reason: 'invalid',
+      message: 'Ingresso cancelado.',
+      ticket: toPublicTicket(ticket),
+    }
   }
 
   if (eventId && ticket.eventId.toString() !== String(eventId)) {
@@ -85,6 +134,15 @@ export async function peekTicket(code) {
 
   if (!ticket) {
     return { valid: false, reason: 'invalid', message: 'Ingresso não encontrado.' }
+  }
+
+  if (ticket.status === 'cancelled') {
+    return {
+      valid: false,
+      reason: 'invalid',
+      message: 'Ingresso cancelado.',
+      ticket: toPublicTicket(ticket),
+    }
   }
 
   if (ticket.status === 'used') {

@@ -2,6 +2,7 @@ import QRCode from 'qrcode'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import Navbar from '../components/common/Navbar'
+import { useToast } from '../components/common/Toast'
 import { ticketService } from '../services/ticketService'
 
 function formatPrice(value) {
@@ -22,15 +23,16 @@ function formatDate(dateStr) {
 const STATUS_LABEL = {
   active: { text: 'Válido', cls: 'ticket__status--active' },
   used: { text: 'Utilizado', cls: 'ticket__status--used' },
+  cancelled: { text: 'Cancelado', cls: 'ticket__status--cancelled' },
 }
 
 export default function TicketPage() {
   const { code } = useParams()
+  const { showToast } = useToast()
   const [ticket, setTicket] = useState(null)
   const [qrSrc, setQrSrc] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     ticketService
@@ -48,8 +50,7 @@ export default function TicketPage() {
   function handleCopy() {
     const url = `${window.location.origin}/ingresso/${ticket.code}`
     navigator.clipboard.writeText(url).then(() => {
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      showToast('Link do ingresso copiado.', 'success')
     })
   }
 
@@ -161,7 +162,7 @@ export default function TicketPage() {
 
           <div className="ticket__footer">
             <button type="button" className="btn btn--primary btn--block" onClick={handleCopy}>
-              {copied ? 'Link copiado!' : 'Compartilhar ingresso'}
+              Compartilhar ingresso
             </button>
             <Link to="/" className="btn btn--ghost btn--block">
               Voltar ao início

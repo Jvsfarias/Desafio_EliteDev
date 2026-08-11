@@ -43,10 +43,11 @@ const ticketSchema = new mongoose.Schema(
     totalPrice: { type: Number, required: true, min: 0 },
     status: {
       type: String,
-      enum: ['active', 'used'],
+      enum: ['active', 'used', 'cancelled'],
       default: 'active',
     },
     usedAt: { type: Date, default: null },
+    cancelledAt: { type: Date, default: null },
   },
   { timestamps: true }
 )
