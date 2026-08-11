@@ -208,7 +208,7 @@ export default function ShowDetail() {
               className="detail__poster detail__poster--show"
             />
             <div className="detail__meta">
-              <Link to="/#eventos" className="detail__back">
+              <Link to="/eventos" className="detail__back">
                 ← Voltar
               </Link>
               <h1 className="detail__title">{event.title}</h1>

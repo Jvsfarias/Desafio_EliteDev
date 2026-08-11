@@ -224,7 +224,7 @@ export default function MovieDetail() {
               className="detail__poster"
             />
             <div className="detail__meta">
-              <Link to="/" className="detail__back">
+              <Link to="/cinema" className="detail__back">
                 ← Voltar
               </Link>
               {event.rating && (

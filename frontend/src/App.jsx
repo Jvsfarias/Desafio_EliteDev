@@ -4,6 +4,8 @@ import BlockPortaria from './components/common/BlockPortaria'
 import RequireRole from './components/common/RequireRole'
 import { ToastProvider } from './components/common/Toast'
 import Home from './pages/Home'
+import Cinema from './pages/Cinema'
+import Eventos from './pages/Eventos'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import CreateEvent from './pages/CreateEvent'
@@ -24,6 +26,14 @@ function App() {
               element={
                 <BlockPortaria>
                   <Home />
+                </BlockPortaria>
+              }
+            />
+            <Route
+              path="/cinema"
+              element={
+                <BlockPortaria>
+                  <Cinema />
                 </BlockPortaria>
               }
             />
@@ -58,6 +68,14 @@ function App() {
                   <RequireRole role="organizador">
                     <CreateEvent />
                   </RequireRole>
+                </BlockPortaria>
+              }
+            />
+            <Route
+              path="/eventos"
+              element={
+                <BlockPortaria>
+                  <Eventos />
                 </BlockPortaria>
               }
             />

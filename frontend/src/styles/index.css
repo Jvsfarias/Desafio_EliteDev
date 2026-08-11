@@ -1067,6 +1067,15 @@ a.navbar__login {
   border-top: 1px solid var(--line);
 }
 
+.listing--page {
+  padding-top: 2rem;
+  min-height: calc(100vh - 5rem);
+}
+
+.listing--page.listing--events {
+  border-top: 0;
+}
+
 .listing__header {
   margin-bottom: 1.5rem;
   animation: fade-up 0.55s ease both;

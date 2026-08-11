@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { useLocation } from 'react-router-dom'
 import Navbar from '../components/common/Navbar'
 import Logo from '../components/common/Logo'
 import MovieCard from '../components/events/MovieCard'
@@ -14,9 +13,7 @@ function scrollToSection(id) {
 }
 
 export default function Home() {
-  const location = useLocation()
   const { isOrganizer } = useAuth()
-  const [activeSection, setActiveSection] = useState('cinema')
   const [movies, setMovies] = useState([])
   const [loadingMovies, setLoadingMovies] = useState(true)
   const [moviesError, setMoviesError] = useState('')
@@ -24,19 +21,6 @@ export default function Home() {
   const [loadingShows, setLoadingShows] = useState(true)
   const [showsError, setShowsError] = useState('')
   const [editingEvent, setEditingEvent] = useState(null)
-
-  function handleNavigate(section) {
-    setActiveSection(section)
-    scrollToSection(section)
-  }
-
-  useEffect(() => {
-    const hash = location.hash.replace('#', '')
-    if (hash === 'cinema' || hash === 'eventos') {
-      setActiveSection(hash)
-      scrollToSection(hash)
-    }
-  }, [location.hash])
 
   useEffect(() => {
     let active = true
@@ -90,7 +74,7 @@ export default function Home() {
 
   return (
     <div className="home">
-      <Navbar activeSection={activeSection} onNavigate={handleNavigate} />
+      <Navbar />
 
       <section className="hero" aria-label="Destaque">
         <div className="hero__bg" />
@@ -106,14 +90,14 @@ export default function Home() {
             <button
               type="button"
               className="hero__cta"
-              onClick={() => handleNavigate('cinema')}
+              onClick={() => scrollToSection('cinema')}
             >
               Ver em cartaz
             </button>
             <button
               type="button"
               className="hero__cta hero__cta--ghost"
-              onClick={() => handleNavigate('eventos')}
+              onClick={() => scrollToSection('eventos')}
             >
               Ver eventos
             </button>

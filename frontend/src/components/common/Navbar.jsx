@@ -1,24 +1,15 @@
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import Logo from './Logo'
 import UserMenu from './UserMenu'
 import { useAuth } from '../../contexts/AuthContext'
 
-export default function Navbar({ activeSection, onNavigate }) {
-  const navigate = useNavigate()
+export default function Navbar() {
   const location = useLocation()
   const { user, isAuthenticated, isOrganizer, isPortaria, isCliente, logout } = useAuth()
+  const isCinema = location.pathname === '/cinema'
+  const isEventos = location.pathname === '/eventos'
   const isMyTickets = location.pathname === '/meus-ingressos'
   const isCreateEvent = location.pathname === '/eventos/novo'
-  const sectionActive = !isMyTickets && !isCreateEvent
-
-  function handleSectionNavigate(section) {
-    if (onNavigate) {
-      onNavigate(section)
-      return
-    }
-
-    navigate(`/#${section}`)
-  }
 
   return (
     <header className="navbar">
@@ -34,20 +25,18 @@ export default function Navbar({ activeSection, onNavigate }) {
         <nav className="navbar__nav" aria-label="Principal">
           {!isPortaria ? (
             <>
-              <button
-                type="button"
-                className={`navbar__link ${sectionActive && activeSection === 'cinema' ? 'is-active' : ''}`}
-                onClick={() => handleSectionNavigate('cinema')}
+              <Link
+                to="/cinema"
+                className={`navbar__link ${isCinema ? 'is-active' : ''}`}
               >
                 Cinema
-              </button>
-              <button
-                type="button"
-                className={`navbar__link ${sectionActive && activeSection === 'eventos' ? 'is-active' : ''}`}
-                onClick={() => handleSectionNavigate('eventos')}
+              </Link>
+              <Link
+                to="/eventos"
+                className={`navbar__link ${isEventos ? 'is-active' : ''}`}
               >
                 Eventos
-              </button>
+              </Link>
               {isCliente ? (
                 <Link
                   to="/meus-ingressos"
