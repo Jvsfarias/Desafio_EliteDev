@@ -1,7 +1,8 @@
-import { useEffect, useReducer } from 'react'
+import { useEffect, useReducer, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import Navbar from '../components/common/Navbar'
 import Footer from '../components/common/Footer'
+import PaymentModal from '../components/common/PaymentModal'
 import ShowVenueMap from '../components/events/ShowVenueMap'
 import { useAuth } from '../contexts/AuthContext'
 import { SHOW_AREAS } from '../data/showAreas'
@@ -87,6 +88,7 @@ export default function ShowDetail() {
   const { isAuthenticated, token, isOrganizer } = useAuth()
   const navigate = useNavigate()
   const [state, dispatch] = useReducer(reducer, initialState)
+  const [paymentOpen, setPaymentOpen] = useState(false)
 
   const {
     event,
@@ -128,7 +130,7 @@ export default function ShowDetail() {
   const totalPrice = selected ? selected.price * quantity : 0
   const canPurchase = selected && quantity >= 1 && quantity <= maxQty && maxQty > 0
 
-  async function handlePurchase() {
+  function handlePurchase() {
     if (isOrganizer) {
       dispatch({
         type: 'PURCHASE_ERROR',
@@ -147,8 +149,11 @@ export default function ShowDetail() {
       return
     }
 
-    dispatch({ type: 'PURCHASING' })
+    setPaymentOpen(true)
+  }
 
+  async function confirmPayment() {
+    dispatch({ type: 'PURCHASING' })
     try {
       const result = await bookingService.bookShow({
         eventId: id,
@@ -162,8 +167,10 @@ export default function ShowDetail() {
         remaining: result.remaining,
         ticketCode: result.ticketCode,
       })
+      return result
     } catch (err) {
       dispatch({ type: 'PURCHASE_ERROR', error: err.message })
+      throw err
     }
   }
 
@@ -331,7 +338,7 @@ export default function ShowDetail() {
                     <button
                       type="button"
                       onClick={handlePurchase}
-                      disabled={purchasing || (!isAuthenticated ? false : !canPurchase)}
+                      disabled={purchasing || paymentOpen || (!isAuthenticated ? false : !canPurchase)}
                       className="btn btn--primary detail__buy-btn"
                     >
                       {purchasing
@@ -348,6 +355,24 @@ export default function ShowDetail() {
         ) : null}
       </main>
       <Footer />
+
+      {paymentOpen && selected ? (
+        <PaymentModal
+          title={event.title}
+          summaryLines={[
+            `Área: ${selected.label}`,
+            `Quantidade: ${quantity}`,
+            event.showDate || event.showTime
+              ? `Data: ${[event.showDate, event.showTime].filter(Boolean).join(' · ')}`
+              : null,
+          ].filter(Boolean)}
+          total={totalPrice}
+          onConfirmPayment={confirmPayment}
+          onClose={() => {
+            if (!purchasing) setPaymentOpen(false)
+          }}
+        />
+      ) : null}
     </div>
   )
 }

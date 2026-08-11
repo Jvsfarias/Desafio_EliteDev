@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useReducer, useRef } from 'react'
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import Navbar from '../components/common/Navbar'
 import Footer from '../components/common/Footer'
+import PaymentModal from '../components/common/PaymentModal'
 import SeatSelector from '../components/events/SeatSelector'
 import { useAuth } from '../contexts/AuthContext'
 import { bookingService } from '../services/bookingService'
@@ -93,6 +94,7 @@ export default function MovieDetail() {
   const navigate = useNavigate()
   const [state, dispatch] = useReducer(reducer, initialState)
   const seatsRef = useRef(null)
+  const [paymentOpen, setPaymentOpen] = useState(false)
 
   const {
     event,
@@ -144,7 +146,7 @@ export default function MovieDetail() {
     dispatch({ type: 'TOGGLE_SEAT', seatId })
   }
 
-  async function handlePurchase() {
+  function handlePurchase() {
     if (isOrganizer) {
       dispatch({
         type: 'PURCHASE_ERROR',
@@ -163,8 +165,11 @@ export default function MovieDetail() {
       return
     }
 
-    dispatch({ type: 'PURCHASING' })
+    setPaymentOpen(true)
+  }
 
+  async function confirmPayment() {
+    dispatch({ type: 'PURCHASING' })
     try {
       const result = await bookingService.book({
         eventId: id,
@@ -174,8 +179,10 @@ export default function MovieDetail() {
         token,
       })
       dispatch({ type: 'PURCHASE_OK', seats: selectedSeats, ticketCode: result.ticketCode })
+      return result
     } catch (err) {
       dispatch({ type: 'PURCHASE_ERROR', error: err.message })
+      throw err
     }
   }
 
@@ -368,7 +375,7 @@ export default function MovieDetail() {
                     <button
                       type="button"
                       onClick={handlePurchase}
-                      disabled={purchasing || (!isAuthenticated ? false : !canPurchase)}
+                      disabled={purchasing || paymentOpen || (!isAuthenticated ? false : !canPurchase)}
                       className="btn btn--primary detail__buy-btn"
                     >
                       {purchasing
@@ -385,6 +392,22 @@ export default function MovieDetail() {
         )}
       </main>
       <Footer />
+
+      {paymentOpen ? (
+        <PaymentModal
+          title={event.title}
+          summaryLines={[
+            `Sessão: ${selectedDate} · ${selectedTime}`,
+            `Assentos: ${selectedSeats.join(', ')}`,
+            `Quantidade: ${selectedSeats.length}`,
+          ]}
+          total={totalPrice}
+          onConfirmPayment={confirmPayment}
+          onClose={() => {
+            if (!purchasing) setPaymentOpen(false)
+          }}
+        />
+      ) : null}
     </div>
   )
 }
