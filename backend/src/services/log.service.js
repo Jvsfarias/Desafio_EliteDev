@@ -148,3 +148,27 @@ export async function logAutoRemoval({
     message,
   })
 }
+
+export async function logEventCancel({
+  actorUserId,
+  event,
+  refundedTickets,
+  refundedTotal,
+  ticketCodes = [],
+}) {
+  return createActivityLog({
+    action: 'event_cancel',
+    actorUserId,
+    eventId: event._id,
+    eventTitle: event.title,
+    eventType: event.type,
+    totalPrice: refundedTotal,
+    details: {
+      refundedTickets,
+      refundedTotal,
+      ticketCodes,
+      venue: event.venue,
+    },
+    message: `Evento "${event.title}" cancelado pelo organizador. ${refundedTickets} ingresso(s) reembolsado(s).`,
+  })
+}

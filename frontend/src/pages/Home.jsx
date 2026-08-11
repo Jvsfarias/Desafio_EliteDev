@@ -73,6 +73,12 @@ export default function Home() {
     )
   }
 
+  function handleEventDeleted(eventId) {
+    setMovies((current) => current.filter((movie) => movie.id !== eventId))
+    setShows((current) => current.filter((show) => show.id !== eventId))
+    setEditingEvent(null)
+  }
+
   return (
     <div className="home">
       <Navbar />
@@ -171,6 +177,7 @@ export default function Home() {
           event={editingEvent}
           onClose={() => setEditingEvent(null)}
           onSaved={handleEventSaved}
+          onDeleted={handleEventDeleted}
         />
       ) : null}
 
@@ -179,6 +186,7 @@ export default function Home() {
           event={editingEvent}
           onClose={() => setEditingEvent(null)}
           onSaved={handleEventSaved}
+          onDeleted={handleEventDeleted}
         />
       ) : null}
 

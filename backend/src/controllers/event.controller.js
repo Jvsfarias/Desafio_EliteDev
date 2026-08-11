@@ -1,4 +1,5 @@
 import {
+  cancelEventByOrganizer,
   createEvent,
   getEventById,
   listMovieEvents,
@@ -62,5 +63,18 @@ export async function update(req, res) {
     }
     console.error(error)
     return res.status(500).json({ message: 'Erro ao atualizar evento.' })
+  }
+}
+
+export async function cancel(req, res) {
+  try {
+    const result = await cancelEventByOrganizer(req.params.id, req.user)
+    return res.status(200).json(result)
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    console.error(error)
+    return res.status(500).json({ message: 'Erro ao cancelar evento.' })
   }
 }

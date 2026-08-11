@@ -1,5 +1,8 @@
 import Event from '../models/Event.js'
+import Booking from '../models/Booking.js'
+import Ticket from '../models/Ticket.js'
 import { cleanupExpiredEvents, ensureEventIsActive } from './eventCleanup.service.js'
+import { logEventCancel } from './log.service.js'
 
 const CINEMA_SEAT_MAP = Object.freeze({ rows: 8, cols: 12 })
 const TIME_PATTERN = /^\d{2}:\d{2}$/
@@ -347,4 +350,58 @@ async function updateShowEvent(event, payload) {
   await event.save()
 
   return toPublicEvent(event)
+}
+
+export async function cancelEventByOrganizer(id, organizer) {
+  const event = await Event.findById(id)
+
+  if (!event) {
+    throw createHttpError('Evento não encontrado.', 404)
+  }
+
+  const activeTickets = await Ticket.find({
+    eventId: event._id,
+    status: 'active',
+  })
+
+  let refundedTotal = 0
+  const ticketCodes = []
+
+  for (const ticket of activeTickets) {
+    if (ticket.bookingId) {
+      await Booking.findByIdAndDelete(ticket.bookingId)
+    }
+
+    ticket.status = 'cancelled'
+    ticket.cancelledAt = new Date()
+    await ticket.save()
+
+    refundedTotal += ticket.totalPrice || 0
+    ticketCodes.push(ticket.code)
+  }
+
+  const snapshot = {
+    _id: event._id,
+    title: event.title,
+    type: event.type,
+    venue: event.venue,
+  }
+
+  await Event.findByIdAndDelete(event._id)
+
+  await logEventCancel({
+    actorUserId: organizer._id,
+    event: snapshot,
+    refundedTickets: ticketCodes.length,
+    refundedTotal,
+    ticketCodes,
+  })
+
+  return {
+    id: snapshot._id.toString(),
+    title: snapshot.title,
+    type: snapshot.type,
+    refundedTickets: ticketCodes.length,
+    refundedTotal,
+  }
 }

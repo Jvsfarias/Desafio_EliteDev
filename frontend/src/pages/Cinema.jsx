@@ -39,6 +39,11 @@ export default function Cinema() {
     )
   }
 
+  function handleEventDeleted(eventId) {
+    setMovies((current) => current.filter((movie) => movie.id !== eventId))
+    setEditingEvent(null)
+  }
+
   return (
     <div className="home">
       <Navbar />
@@ -75,6 +80,7 @@ export default function Cinema() {
           event={editingEvent}
           onClose={() => setEditingEvent(null)}
           onSaved={handleEventSaved}
+          onDeleted={handleEventDeleted}
         />
       ) : null}
 

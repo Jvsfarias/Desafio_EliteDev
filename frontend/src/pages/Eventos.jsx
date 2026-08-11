@@ -39,6 +39,11 @@ export default function Eventos() {
     )
   }
 
+  function handleEventDeleted(eventId) {
+    setShows((current) => current.filter((show) => show.id !== eventId))
+    setEditingEvent(null)
+  }
+
   return (
     <div className="home">
       <Navbar />
@@ -75,6 +80,7 @@ export default function Eventos() {
           event={editingEvent}
           onClose={() => setEditingEvent(null)}
           onSaved={handleEventSaved}
+          onDeleted={handleEventDeleted}
         />
       ) : null}
 

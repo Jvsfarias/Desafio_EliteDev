@@ -1900,6 +1900,30 @@ a.navbar__login {
   margin-top: 0.5rem;
 }
 
+.modal__actions--split {
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.modal__actions-right {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.modal__danger-btn {
+  color: #fca5a5;
+  border-color: rgba(239, 68, 68, 0.45);
+}
+
+.modal__danger-btn:hover:not(:disabled) {
+  color: #fecaca;
+  border-color: rgba(239, 68, 68, 0.7);
+  background: rgba(239, 68, 68, 0.08);
+}
+
 .modal__cancel {
   border: 1px solid var(--line);
   background: transparent;
@@ -1993,6 +2017,12 @@ a.navbar__login {
   color: #93c5fd;
   background: rgba(59, 130, 246, 0.12);
   border: 1px solid rgba(59, 130, 246, 0.35);
+}
+
+.activity-log__badge--event-cancel {
+  color: #fdba74;
+  background: rgba(249, 115, 22, 0.12);
+  border: 1px solid rgba(249, 115, 22, 0.35);
 }
 
 .activity-log__time {

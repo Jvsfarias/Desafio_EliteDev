@@ -52,4 +52,23 @@ export const eventService = {
       )
     }
   },
+
+  async cancel(id, token) {
+    try {
+      const { data } = await api.post(
+        `/events/${id}/cancel`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      )
+      return data
+    } catch (error) {
+      throw new Error(
+        getApiErrorMessage(error, 'Não foi possível cancelar o evento.'),
+      )
+    }
+  },
 }

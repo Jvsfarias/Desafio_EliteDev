@@ -62,6 +62,7 @@ const ACTION_LABEL = {
   purchase: { text: 'Compra', cls: 'activity-log__badge--purchase' },
   cancellation: { text: 'Cancelamento', cls: 'activity-log__badge--cancel' },
   auto_removal: { text: 'Remoção automática', cls: 'activity-log__badge--auto' },
+  event_cancel: { text: 'Evento cancelado', cls: 'activity-log__badge--event-cancel' },
 }
 
 export default function ActivityLogsModal({ onClose }) {
@@ -123,7 +124,7 @@ export default function ActivityLogsModal({ onClose }) {
         </header>
 
         <p className="activity-logs__hint">
-          Registro de compras e cancelamentos realizados pelos clientes.
+          Registro de compras, cancelamentos de clientes e cancelamentos de eventos.
         </p>
 
         {loading ? (

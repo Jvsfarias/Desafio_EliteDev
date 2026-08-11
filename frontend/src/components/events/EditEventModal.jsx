@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
+import CancelEventModal from './CancelEventModal'
 import { AGE_RATINGS, DEFAULT_AGE_RATING } from '../../data/ageRatings'
+import { useToast } from '../common/Toast'
 import { useAuth } from '../../contexts/AuthContext'
 import { eventService } from '../../services/eventService'
 
@@ -18,14 +20,17 @@ function normalizeInitialSessions(sessions) {
   }))
 }
 
-export default function EditEventModal({ event, onClose, onSaved }) {
+export default function EditEventModal({ event, onClose, onSaved, onDeleted }) {
   const { token } = useAuth()
+  const { showToast } = useToast()
   const [rating, setRating] = useState(DEFAULT_AGE_RATING)
   const [venue, setVenue] = useState('')
   const [price, setPrice] = useState('')
   const [sessions, setSessions] = useState([createEmptySession()])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [confirmCancel, setConfirmCancel] = useState(false)
+  const [cancelling, setCancelling] = useState(false)
 
   useEffect(() => {
     if (!event) return
@@ -38,11 +43,11 @@ export default function EditEventModal({ event, onClose, onSaved }) {
 
   useEffect(() => {
     function handleKey(e) {
-      if (e.key === 'Escape') onClose()
+      if (e.key === 'Escape' && !confirmCancel) onClose()
     }
     document.addEventListener('keydown', handleKey)
     return () => document.removeEventListener('keydown', handleKey)
-  }, [onClose])
+  }, [onClose, confirmCancel])
 
   function updateSession(index, patch) {
     setSessions((current) =>
@@ -134,9 +139,31 @@ export default function EditEventModal({ event, onClose, onSaved }) {
     }
   }
 
+  async function handleConfirmCancel() {
+    setCancelling(true)
+    setError('')
+    try {
+      const result = await eventService.cancel(event.id, token)
+      showToast(
+        result.refundedTickets > 0
+          ? `Filme cancelado. ${result.refundedTickets} ingresso(s) reembolsado(s).`
+          : 'Filme cancelado com sucesso.',
+        'success',
+      )
+      onDeleted?.(event.id)
+      onClose()
+    } catch (err) {
+      setError(err.message || 'Não foi possível cancelar o filme.')
+      setConfirmCancel(false)
+    } finally {
+      setCancelling(false)
+    }
+  }
+
   if (!event) return null
 
   return (
+    <>
     <div className="modal-overlay" onClick={onClose} role="presentation">
       <div
         className="modal"
@@ -255,16 +282,38 @@ export default function EditEventModal({ event, onClose, onSaved }) {
             ))}
           </section>
 
-          <div className="modal__actions">
-            <button type="button" className="modal__cancel" onClick={onClose} disabled={loading}>
-              Cancelar
+          <div className="modal__actions modal__actions--split">
+            <button
+              type="button"
+              className="btn btn--ghost modal__danger-btn"
+              onClick={() => setConfirmCancel(true)}
+              disabled={loading || cancelling}
+            >
+              Cancelar filme
             </button>
-            <button type="submit" className="auth-form__submit" disabled={loading}>
-              {loading ? 'Salvando...' : 'Salvar alterações'}
-            </button>
+            <div className="modal__actions-right">
+              <button type="button" className="modal__cancel" onClick={onClose} disabled={loading}>
+                Fechar
+              </button>
+              <button type="submit" className="auth-form__submit" disabled={loading}>
+                {loading ? 'Salvando...' : 'Salvar alterações'}
+              </button>
+            </div>
           </div>
         </form>
       </div>
     </div>
+
+    {confirmCancel ? (
+      <CancelEventModal
+        event={event}
+        loading={cancelling}
+        onClose={() => {
+          if (!cancelling) setConfirmCancel(false)
+        }}
+        onConfirm={handleConfirmCancel}
+      />
+    ) : null}
+    </>
   )
 }
