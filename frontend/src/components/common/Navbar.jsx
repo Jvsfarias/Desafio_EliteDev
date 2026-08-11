@@ -1,19 +1,12 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import Logo from './Logo'
+import UserMenu from './UserMenu'
 import { useAuth } from '../../contexts/AuthContext'
-import { getRoleLabel } from '../../data/roles'
-
-function formatName(name = '') {
-  const trimmed = name.trim()
-  if (!trimmed) return ''
-  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1)
-}
 
 export default function Navbar({ activeSection, onNavigate }) {
   const navigate = useNavigate()
   const location = useLocation()
   const { user, isAuthenticated, isOrganizer, isPortaria, isCliente, logout } = useAuth()
-  const showRole = user?.role && user.role !== 'cliente'
   const isMyTickets = location.pathname === '/meus-ingressos'
   const isCreateEvent = location.pathname === '/eventos/novo'
   const sectionActive = !isMyTickets && !isCreateEvent
@@ -39,11 +32,7 @@ export default function Navbar({ activeSection, onNavigate }) {
         </Link>
 
         <nav className="navbar__nav" aria-label="Principal">
-          {isPortaria ? (
-            <Link to="/portaria" className="navbar__link is-active">
-              Portaria
-            </Link>
-          ) : (
+          {!isPortaria ? (
             <>
               <button
                 type="button"
@@ -76,21 +65,16 @@ export default function Navbar({ activeSection, onNavigate }) {
                 </Link>
               ) : null}
             </>
-          )}
+          ) : null}
         </nav>
 
         {isAuthenticated ? (
-          <div className="navbar__session">
-            <div className="navbar__user">
-              <span className="navbar__user-name">{formatName(user.name)}</span>
-              {showRole ? (
-                <span className="navbar__user-role">{getRoleLabel(user.role)}</span>
-              ) : null}
-            </div>
-            <button type="button" className="navbar__login" onClick={logout}>
-              Sair
-            </button>
-          </div>
+          <UserMenu
+            user={user}
+            isCliente={isCliente}
+            isOrganizer={isOrganizer}
+            onLogout={logout}
+          />
         ) : (
           <Link to="/login" className="navbar__login">
             Entrar

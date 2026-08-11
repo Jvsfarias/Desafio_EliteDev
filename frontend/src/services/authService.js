@@ -48,6 +48,17 @@ export const authService = {
       'Não foi possível criar a conta.',
     )
   },
+
+  async updateProfile(payload, token) {
+    try {
+      const { data } = await api.put('/auth/me', payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      return data
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error, 'Não foi possível atualizar o perfil.'))
+    }
+  },
 }
 
 export { readStorage, writeStorage, clearStorage, STORAGE_KEY }

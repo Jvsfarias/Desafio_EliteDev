@@ -1,4 +1,4 @@
-import { loginUser, registerUser } from '../services/auth.service.js'
+import { loginUser, registerUser, updateProfile } from '../services/auth.service.js'
 
 function handleAuthError(res, error, fallbackMessage) {
   if (error.status) {
@@ -24,5 +24,14 @@ export async function login(req, res) {
     return res.status(200).json(data)
   } catch (error) {
     return handleAuthError(res, error, 'Erro ao entrar.')
+  }
+}
+
+export async function updateMe(req, res) {
+  try {
+    const data = await updateProfile(req.user._id, req.body)
+    return res.status(200).json(data)
+  } catch (error) {
+    return handleAuthError(res, error, 'Erro ao atualizar perfil.')
   }
 }

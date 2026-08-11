@@ -31,6 +31,17 @@ export function AuthProvider({ children }) {
     return data
   }
 
+  async function updateProfile(payload) {
+    if (!token) {
+      throw new Error('Sessão expirada. Faça login novamente.')
+    }
+
+    const data = await authService.updateProfile(payload, token)
+    writeStorage(data)
+    setSession(data)
+    return data
+  }
+
   function logout() {
     clearStorage()
     setSession(null)
@@ -46,6 +57,7 @@ export function AuthProvider({ children }) {
       isCliente,
       login,
       register,
+      updateProfile,
       logout,
     }),
     [user, token, isOrganizer, isPortaria, isCliente],

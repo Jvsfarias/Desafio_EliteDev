@@ -78,3 +78,61 @@ export async function loginUser({ email, password }) {
     user: toPublicUser(user),
   }
 }
+
+export async function updateProfile(userId, payload) {
+  const { name, email, currentPassword, newPassword } = payload
+
+  if (!name || !email) {
+    throw createHttpError('Informe nome e e-mail.', 400)
+  }
+
+  const user = await User.findById(userId)
+
+  if (!user) {
+    throw createHttpError('Usuário não encontrado.', 404)
+  }
+
+  const normalizedEmail = email.toLowerCase().trim()
+  const trimmedName = name.trim()
+
+  if (!trimmedName) {
+    throw createHttpError('Informe um nome válido.', 400)
+  }
+
+  if (normalizedEmail !== user.email) {
+    const emailExists = await User.findOne({
+      email: normalizedEmail,
+      _id: { $ne: userId },
+    })
+
+    if (emailExists) {
+      throw createHttpError('E-mail já cadastrado.', 409)
+    }
+  }
+
+  if (newPassword) {
+    if (!currentPassword) {
+      throw createHttpError('Informe a senha atual para alterar a senha.', 400)
+    }
+
+    if (newPassword.length < 6) {
+      throw createHttpError('A nova senha deve ter pelo menos 6 caracteres.', 400)
+    }
+
+    const passwordMatch = await bcrypt.compare(currentPassword, user.password)
+    if (!passwordMatch) {
+      throw createHttpError('Senha atual incorreta.', 401)
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10)
+  }
+
+  user.name = trimmedName
+  user.email = normalizedEmail
+  await user.save()
+
+  return {
+    token: createToken(user),
+    user: toPublicUser(user),
+  }
+}
