@@ -4,13 +4,13 @@ const activityLogSchema = new mongoose.Schema(
   {
     action: {
       type: String,
-      enum: ['purchase', 'cancellation'],
+      enum: ['purchase', 'cancellation', 'auto_removal'],
       required: true,
     },
     actorUserId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: true,
+      default: null,
     },
     actorName: { type: String, default: '' },
     actorEmail: { type: String, default: '' },

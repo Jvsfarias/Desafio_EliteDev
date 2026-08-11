@@ -5,7 +5,7 @@ function toPublicLog(log) {
   return {
     id: log._id.toString(),
     action: log.action,
-    actorUserId: log.actorUserId?.toString?.() ?? String(log.actorUserId),
+    actorUserId: log.actorUserId ? log.actorUserId.toString() : null,
     actorName: log.actorName,
     actorEmail: log.actorEmail,
     eventId: log.eventId ? log.eventId.toString() : null,
@@ -20,6 +20,14 @@ function toPublicLog(log) {
 }
 
 async function resolveActor(userId) {
+  if (!userId) {
+    return {
+      actorUserId: null,
+      actorName: 'Sistema',
+      actorEmail: '',
+    }
+  }
+
   const user = await User.findById(userId).select('name email')
   return {
     actorUserId: userId,
@@ -120,5 +128,23 @@ export async function logCancellation({
     totalPrice: ticket.totalPrice,
     details,
     message: `Cancelamento do ingresso ${ticket.code} de "${ticket.eventTitle}" (${detailParts.join(' · ')})`,
+  })
+}
+
+export async function logAutoRemoval({
+  eventId,
+  eventTitle,
+  eventType,
+  details,
+  message,
+}) {
+  return createActivityLog({
+    action: 'auto_removal',
+    actorUserId: null,
+    eventId,
+    eventTitle,
+    eventType,
+    details,
+    message,
   })
 }

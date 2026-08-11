@@ -20,6 +20,22 @@ function formatDateTime(value) {
 
 function formatDetails(log) {
   const details = log.details || {}
+
+  if (log.action === 'auto_removal') {
+    return [
+      details.reason || null,
+      details.showDate || details.showTime
+        ? `Horário: ${[details.showDate, details.showTime].filter(Boolean).join(' · ')}`
+        : null,
+      details.venue ? `Local: ${details.venue}` : null,
+      details.removedSessions?.length
+        ? `Sessões removidas: ${details.removedSessions
+            .map((s) => `${s.date} ${s.time}`)
+            .join(', ')}`
+        : null,
+    ].filter(Boolean)
+  }
+
   if (log.eventType === 'filme' || details.seats?.length) {
     return [
       details.sessionDate && details.sessionTime
@@ -45,6 +61,7 @@ function formatDetails(log) {
 const ACTION_LABEL = {
   purchase: { text: 'Compra', cls: 'activity-log__badge--purchase' },
   cancellation: { text: 'Cancelamento', cls: 'activity-log__badge--cancel' },
+  auto_removal: { text: 'Remoção automática', cls: 'activity-log__badge--auto' },
 }
 
 export default function ActivityLogsModal({ onClose }) {

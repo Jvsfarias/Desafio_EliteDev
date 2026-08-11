@@ -1,4 +1,5 @@
 import Event from '../models/Event.js'
+import { cleanupExpiredEvents, ensureEventIsActive } from './eventCleanup.service.js'
 
 const CINEMA_SEAT_MAP = Object.freeze({ rows: 8, cols: 12 })
 const TIME_PATTERN = /^\d{2}:\d{2}$/
@@ -215,17 +216,20 @@ async function createShowEvent(payload, organizer) {
 }
 
 export async function listMovieEvents() {
+  await cleanupExpiredEvents()
   const events = await Event.find({ type: 'filme' }).sort({ createdAt: -1 })
   return events.map(toPublicEvent)
 }
 
 export async function listShowEvents() {
+  await cleanupExpiredEvents()
   const events = await Event.find({ type: 'show' }).sort({ createdAt: -1 })
   return events.map(toPublicEvent)
 }
 
 export async function getMovieEvent(id) {
-  const event = await Event.findById(id)
+  let event = await Event.findById(id)
+  event = await ensureEventIsActive(event)
 
   if (!event || event.type !== 'filme') {
     const error = new Error('Filme não encontrado.')
@@ -237,7 +241,8 @@ export async function getMovieEvent(id) {
 }
 
 export async function getShowEvent(id) {
-  const event = await Event.findById(id)
+  let event = await Event.findById(id)
+  event = await ensureEventIsActive(event)
 
   if (!event || event.type !== 'show') {
     throw createHttpError('Show não encontrado.', 404)
@@ -247,7 +252,8 @@ export async function getShowEvent(id) {
 }
 
 export async function getEventById(id) {
-  const event = await Event.findById(id)
+  let event = await Event.findById(id)
+  event = await ensureEventIsActive(event)
 
   if (!event) {
     throw createHttpError('Evento não encontrado.', 404)

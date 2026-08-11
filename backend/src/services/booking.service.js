@@ -1,5 +1,6 @@
 import Booking from '../models/Booking.js'
 import Event from '../models/Event.js'
+import { ensureEventIsActive, isDateTimePast } from './eventCleanup.service.js'
 import { logPurchase } from './log.service.js'
 import { createTicket } from './ticket.service.js'
 
@@ -16,7 +17,8 @@ export async function getTakenSeats(eventId, sessionDate, sessionTime) {
 }
 
 export async function getAreaAvailability(eventId) {
-  const event = await Event.findById(eventId)
+  let event = await Event.findById(eventId)
+  event = await ensureEventIsActive(event)
 
   if (!event || event.type !== 'show') {
     throw createHttpError('Show não encontrado.', 404)
@@ -52,7 +54,8 @@ export async function bookSeats({ eventId, sessionDate, sessionTime, seats, user
     throw createHttpError('Organizadores não podem comprar ingressos.', 403)
   }
 
-  const event = await Event.findById(eventId)
+  let event = await Event.findById(eventId)
+  event = await ensureEventIsActive(event)
 
   if (!event) {
     throw createHttpError('Evento não encontrado.', 404)
@@ -66,6 +69,10 @@ export async function bookSeats({ eventId, sessionDate, sessionTime, seats, user
 
   if (!session || !session.times.includes(sessionTime)) {
     throw createHttpError('Sessão ou horário não encontrado.', 404)
+  }
+
+  if (isDateTimePast(sessionDate, sessionTime)) {
+    throw createHttpError('Esta sessão já encerrou.', 400)
   }
 
   if (!Array.isArray(seats) || seats.length === 0) {
@@ -150,10 +157,15 @@ export async function bookShowArea({ eventId, areaKey, quantity, userId, userRol
     throw createHttpError('Organizadores não podem comprar ingressos.', 403)
   }
 
-  const event = await Event.findById(eventId)
+  let event = await Event.findById(eventId)
+  event = await ensureEventIsActive(event)
 
   if (!event || event.type !== 'show') {
     throw createHttpError('Show não encontrado.', 404)
+  }
+
+  if (isDateTimePast(event.showDate, event.showTime)) {
+    throw createHttpError('Este show já encerrou.', 400)
   }
 
   const qty = Number(quantity)
