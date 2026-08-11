@@ -1,6 +1,6 @@
 # EliteDev — Plataforma de Ingressos
 
-> Se for testar a versão no ar, dá uma olhada no [deploy_vercel.md](./deploy_vercel.md) — lá tem as contas e senhas pra fazer login.
+> Se for testar a versão no ar, dá uma olhada no DEPLOY_VERCEL.md — lá tem as contas e senhas pra fazer login.
 
 ---
 
