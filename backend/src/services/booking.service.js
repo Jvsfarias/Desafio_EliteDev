@@ -1,5 +1,6 @@
 import Booking from '../models/Booking.js'
 import Event from '../models/Event.js'
+import { logPurchase } from './log.service.js'
 import { createTicket } from './ticket.service.js'
 
 function createHttpError(message, status) {
@@ -119,6 +120,19 @@ export async function bookSeats({ eventId, sessionDate, sessionTime, seats, user
     totalPrice,
   })
 
+  await logPurchase({
+    actorUserId: userId,
+    event,
+    ticketCode: ticket.code,
+    totalPrice,
+    details: {
+      sessionDate,
+      sessionTime,
+      seats,
+      venue: event.venue,
+    },
+  })
+
   return {
     id: booking._id.toString(),
     eventId: booking.eventId.toString(),
@@ -188,6 +202,21 @@ export async function bookShowArea({ eventId, areaKey, quantity, userId, userRol
     areaLabel: area.label,
     quantity: qty,
     totalPrice,
+  })
+
+  await logPurchase({
+    actorUserId: userId,
+    event,
+    ticketCode: ticket.code,
+    totalPrice,
+    details: {
+      areaKey,
+      areaLabel: area.label,
+      quantity: qty,
+      venue: event.venue,
+      showDate: event.showDate,
+      showTime: event.showTime,
+    },
   })
 
   return {

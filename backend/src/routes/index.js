@@ -4,6 +4,7 @@ import authRoutes from './auth.routes.js'
 import eventRoutes from './event.routes.js'
 import catalogRoutes from './catalog.routes.js'
 import ticketRoutes from './ticket.routes.js'
+import logRoutes from './log.routes.js'
 
 const router = Router()
 
@@ -12,5 +13,6 @@ router.use('/auth', authRoutes)
 router.use('/events', eventRoutes)
 router.use('/catalog', catalogRoutes)
 router.use('/tickets', ticketRoutes)
+router.use('/logs', logRoutes)
 
 export default router

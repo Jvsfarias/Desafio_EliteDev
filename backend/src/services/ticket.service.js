@@ -1,5 +1,6 @@
 import Ticket from '../models/Ticket.js'
 import Booking from '../models/Booking.js'
+import { logCancellation } from './log.service.js'
 
 function createHttpError(message, status) {
   const error = new Error(message)
@@ -78,6 +79,11 @@ export async function cancelTicket(code, userId) {
   ticket.status = 'cancelled'
   ticket.cancelledAt = new Date()
   await ticket.save()
+
+  await logCancellation({
+    actorUserId: userId,
+    ticket,
+  })
 
   return toPublicTicket(ticket)
 }

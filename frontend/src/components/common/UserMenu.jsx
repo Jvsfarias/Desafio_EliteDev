@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import ActivityLogsModal from './ActivityLogsModal'
 import EditProfileModal from './EditProfileModal'
 import { getRoleLabel } from '../../data/roles'
 
@@ -19,6 +20,7 @@ function formatName(name = '') {
 export default function UserMenu({ user, isCliente, isOrganizer, onLogout }) {
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState(false)
+  const [showLogs, setShowLogs] = useState(false)
   const rootRef = useRef(null)
 
   useEffect(() => {
@@ -29,7 +31,7 @@ export default function UserMenu({ user, isCliente, isOrganizer, onLogout }) {
     }
 
     function handleKey(event) {
-      if (event.key === 'Escape' && !editing) setOpen(false)
+      if (event.key === 'Escape' && !editing && !showLogs) setOpen(false)
     }
 
     document.addEventListener('mousedown', handleClickOutside)
@@ -38,7 +40,7 @@ export default function UserMenu({ user, isCliente, isOrganizer, onLogout }) {
       document.removeEventListener('mousedown', handleClickOutside)
       document.removeEventListener('keydown', handleKey)
     }
-  }, [editing])
+  }, [editing, showLogs])
 
   function closeAnd(action) {
     return () => {
@@ -50,6 +52,11 @@ export default function UserMenu({ user, isCliente, isOrganizer, onLogout }) {
   function openEditProfile() {
     setOpen(false)
     setEditing(true)
+  }
+
+  function openLogs() {
+    setOpen(false)
+    setShowLogs(true)
   }
 
   return (
@@ -130,22 +137,40 @@ export default function UserMenu({ user, isCliente, isOrganizer, onLogout }) {
                 ) : null}
 
                 {isOrganizer ? (
-                  <Link
-                    to="/eventos/novo"
-                    className="user-menu__item"
-                    role="menuitem"
-                    onClick={() => setOpen(false)}
-                  >
-                    <span className="user-menu__icon" aria-hidden="true">
-                      <svg viewBox="0 0 24 24" width="18" height="18">
-                        <path
-                          fill="currentColor"
-                          d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
-                        />
-                      </svg>
-                    </span>
-                    Criar evento
-                  </Link>
+                  <>
+                    <Link
+                      to="/eventos/novo"
+                      className="user-menu__item"
+                      role="menuitem"
+                      onClick={() => setOpen(false)}
+                    >
+                      <span className="user-menu__icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="18" height="18">
+                          <path
+                            fill="currentColor"
+                            d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+                          />
+                        </svg>
+                      </span>
+                      Criar evento
+                    </Link>
+                    <button
+                      type="button"
+                      className="user-menu__item"
+                      role="menuitem"
+                      onClick={openLogs}
+                    >
+                      <span className="user-menu__icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="18" height="18">
+                          <path
+                            fill="currentColor"
+                            d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"
+                          />
+                        </svg>
+                      </span>
+                      Logs
+                    </button>
+                  </>
                 ) : null}
               </div>
             ) : null}
@@ -173,6 +198,7 @@ export default function UserMenu({ user, isCliente, isOrganizer, onLogout }) {
       </div>
 
       {editing ? <EditProfileModal onClose={() => setEditing(false)} /> : null}
+      {showLogs ? <ActivityLogsModal onClose={() => setShowLogs(false)} /> : null}
     </>
   )
 }
