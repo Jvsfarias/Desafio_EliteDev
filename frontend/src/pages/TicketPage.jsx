@@ -2,6 +2,7 @@ import QRCode from 'qrcode'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import Navbar from '../components/common/Navbar'
+import Footer from '../components/common/Footer'
 import { useToast } from '../components/common/Toast'
 import { ticketService } from '../services/ticketService'
 
@@ -56,19 +57,20 @@ export default function TicketPage() {
 
   if (loading) {
     return (
-      <>
+      <div className="page">
         <Navbar />
         <div className="detail-loading">
           <div className="spinner" />
           <p>Carregando ingresso...</p>
         </div>
-      </>
+        <Footer />
+      </div>
     )
   }
 
   if (error || !ticket) {
     return (
-      <>
+      <div className="page">
         <Navbar />
         <div className="detail-error">
           <p>{error || 'Ingresso não encontrado.'}</p>
@@ -76,7 +78,8 @@ export default function TicketPage() {
             Voltar
           </Link>
         </div>
-      </>
+        <Footer />
+      </div>
     )
   }
 
@@ -84,7 +87,7 @@ export default function TicketPage() {
   const isCinema = ticket.seats?.length > 0
 
   return (
-    <>
+    <div className="page">
       <Navbar />
 
       <main className="ticket-page container">
@@ -170,6 +173,7 @@ export default function TicketPage() {
           </div>
         </div>
       </main>
-    </>
+      <Footer />
+    </div>
   )
 }

@@ -1,6 +1,7 @@
 import { Html5QrcodeScanner } from 'html5-qrcode'
 import { useEffect, useRef, useState } from 'react'
 import Navbar from '../components/common/Navbar'
+import Footer from '../components/common/Footer'
 import { useAuth } from '../contexts/AuthContext'
 import { ticketService } from '../services/ticketService'
 
@@ -102,7 +103,7 @@ export default function PortariaPage() {
   const cfg = result ? (RESULT_CONFIG[result.reason] ?? RESULT_CONFIG.invalid) : null
 
   return (
-    <>
+    <div className="page">
       <Navbar />
 
       <main className="portaria container">
@@ -183,6 +184,7 @@ export default function PortariaPage() {
           </div>
         )}
       </main>
-    </>
+      <Footer />
+    </div>
   )
 }

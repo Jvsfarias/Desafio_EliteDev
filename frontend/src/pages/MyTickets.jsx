@@ -2,6 +2,7 @@ import QRCode from 'qrcode'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Navbar from '../components/common/Navbar'
+import Footer from '../components/common/Footer'
 import { useToast } from '../components/common/Toast'
 import { useAuth } from '../contexts/AuthContext'
 import { ticketService } from '../services/ticketService'
@@ -232,7 +233,7 @@ export default function MyTickets() {
   }
 
   return (
-    <>
+    <div className="page">
       <Navbar />
       <main className="my-tickets container">
         <header className="my-tickets__header">
@@ -273,6 +274,8 @@ export default function MyTickets() {
         ) : null}
       </main>
 
+      <Footer />
+
       {ticketToCancel ? (
         <CancelTicketModal
           ticket={ticketToCancel}
@@ -283,6 +286,6 @@ export default function MyTickets() {
           onConfirm={handleConfirmCancel}
         />
       ) : null}
-    </>
+    </div>
   )
 }

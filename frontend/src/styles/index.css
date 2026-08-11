@@ -30,6 +30,25 @@ body {
   min-height: 100vh;
 }
 
+#root {
+  min-height: 100vh;
+}
+
+/* Páginas curtas: footer no rodapé sem comprimir o conteúdo */
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.page > *:not(.site-footer) {
+  flex-shrink: 0;
+}
+
+.page > .site-footer {
+  margin-top: auto;
+}
+
 button,
 a {
   font: inherit;

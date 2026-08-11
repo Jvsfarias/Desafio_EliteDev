@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useReducer, useRef } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import Navbar from '../components/common/Navbar'
+import Footer from '../components/common/Footer'
 import SeatSelector from '../components/events/SeatSelector'
 import { useAuth } from '../contexts/AuthContext'
 import { bookingService } from '../services/bookingService'
@@ -180,19 +181,20 @@ export default function MovieDetail() {
 
   if (loading) {
     return (
-      <>
+      <div className="page">
         <Navbar />
         <div className="detail-loading">
           <div className="spinner" />
           <p>Carregando filme...</p>
         </div>
-      </>
+        <Footer />
+      </div>
     )
   }
 
   if (error) {
     return (
-      <>
+      <div className="page">
         <Navbar />
         <div className="detail-error">
           <p>{error}</p>
@@ -200,7 +202,8 @@ export default function MovieDetail() {
             Voltar
           </Link>
         </div>
-      </>
+        <Footer />
+      </div>
     )
   }
 
@@ -210,7 +213,7 @@ export default function MovieDetail() {
   const canPurchase = selectedDate && selectedTime && selectedSeats.length > 0
 
   return (
-    <>
+    <div className="page">
       <Navbar />
 
       <main className="detail">
@@ -381,6 +384,7 @@ export default function MovieDetail() {
           </section>
         )}
       </main>
-    </>
+      <Footer />
+    </div>
   )
 }

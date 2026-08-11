@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/common/Navbar'
+import Footer from '../components/common/Footer'
+import { useToast } from '../components/common/Toast'
 import SeatMapPreview from '../components/events/SeatMapPreview'
 import ShowVenueMap from '../components/events/ShowVenueMap'
 import { useAuth } from '../contexts/AuthContext'
@@ -17,6 +19,7 @@ function createEmptySession() {
 export default function CreateEvent() {
   const navigate = useNavigate()
   const { token } = useAuth()
+  const { showToast } = useToast()
   const [mode, setMode] = useState('cinema')
 
   // Cinema state
@@ -40,8 +43,6 @@ export default function CreateEvent() {
   const [loadingShows, setLoadingShows] = useState(false)
 
   // Shared
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
 
   const movies = catalog.filter((item) => item.type === 'filme')
@@ -53,7 +54,7 @@ export default function CreateEvent() {
       if (!token) {
         if (active) {
           setLoadingCatalog(false)
-          setError('Faça login como organizador para carregar o catálogo.')
+          showToast('Faça login como organizador para carregar o catálogo.', 'error')
         }
         return
       }
@@ -62,7 +63,7 @@ export default function CreateEvent() {
         const items = await catalogService.listMovies(token)
         if (active) setCatalog(items)
       } catch {
-        if (active) setError('Não foi possível carregar o catálogo.')
+        if (active) showToast('Não foi possível carregar o catálogo.', 'error')
       } finally {
         if (active) setLoadingCatalog(false)
       }
@@ -70,7 +71,7 @@ export default function CreateEvent() {
 
     loadCatalog()
     return () => { active = false }
-  }, [token])
+  }, [token, showToast])
 
   useEffect(() => {
     let active = true
@@ -79,13 +80,14 @@ export default function CreateEvent() {
       if (mode !== 'show' || !token || shows.length > 0) return
 
       setLoadingShows(true)
-      setError('')
 
       try {
         const items = await catalogService.listShows(token)
         if (active) setShows(items)
       } catch (err) {
-        if (active) setError(err.message || 'Não foi possível carregar os shows.')
+        if (active) {
+          showToast(err.message || 'Não foi possível carregar os shows.', 'error')
+        }
       } finally {
         if (active) setLoadingShows(false)
       }
@@ -93,7 +95,7 @@ export default function CreateEvent() {
 
     loadShows()
     return () => { active = false }
-  }, [mode, token, shows.length])
+  }, [mode, token, shows.length, showToast])
 
   // Cinema helpers
   function updateSession(index, patch) {
@@ -149,18 +151,16 @@ export default function CreateEvent() {
 
   async function handleSubmitCinema(e) {
     e.preventDefault()
-    setError('')
-    setSuccess('')
 
     const selected = movies.find((item) => item.id === catalogItemId)
 
     if (!selected) {
-      setError('Selecione um filme do catálogo.')
+      showToast('Selecione um filme do catálogo.', 'error')
       return
     }
 
     if (!venue || price === '') {
-      setError('Preencha local e preço.')
+      showToast('Preencha local e preço.', 'error')
       return
     }
 
@@ -172,7 +172,7 @@ export default function CreateEvent() {
       .filter((session) => session.date && session.times.length > 0)
 
     if (normalizedSessions.length === 0) {
-      setError('Adicione ao menos uma sessão com data e horário.')
+      showToast('Adicione ao menos uma sessão com data e horário.', 'error')
       return
     }
 
@@ -205,7 +205,7 @@ export default function CreateEvent() {
         token,
       )
 
-      setSuccess('Sessões de cinema criadas com sucesso.')
+      showToast('Sessões de cinema criadas com sucesso.', 'success')
       setCatalogItemId('')
       setRating(DEFAULT_AGE_RATING)
       setVenue('')
@@ -213,7 +213,7 @@ export default function CreateEvent() {
       setSessions([createEmptySession()])
       setTimeout(() => navigate('/'), 900)
     } catch (err) {
-      setError(err.message || 'Não foi possível criar o evento.')
+      showToast(err.message || 'Não foi possível criar o evento.', 'error')
     } finally {
       setLoading(false)
     }
@@ -221,23 +221,21 @@ export default function CreateEvent() {
 
   async function handleSubmitShow(e) {
     e.preventDefault()
-    setError('')
-    setSuccess('')
 
     const selected = shows.find((item) => item.id === showItemId)
 
     if (!selected) {
-      setError('Selecione um show do catálogo.')
+      showToast('Selecione um show do catálogo.', 'error')
       return
     }
 
     if (!showVenue) {
-      setError('Informe o local do evento.')
+      showToast('Informe o local do evento.', 'error')
       return
     }
 
     if (!showDate || !showTime) {
-      setError('Informe data e horário do show.')
+      showToast('Informe data e horário do show.', 'error')
       return
     }
 
@@ -249,7 +247,7 @@ export default function CreateEvent() {
     }))
 
     if (normalizedAreas.every((a) => a.capacity === 0)) {
-      setError('Defina a capacidade de ao menos uma área.')
+      showToast('Defina a capacidade de ao menos uma área.', 'error')
       return
     }
 
@@ -271,7 +269,7 @@ export default function CreateEvent() {
         token,
       )
 
-      setSuccess('Show cadastrado com sucesso.')
+      showToast('Show cadastrado com sucesso.', 'success')
       setShowItemId('')
       setShowVenue('')
       setShowDate('')
@@ -280,7 +278,7 @@ export default function CreateEvent() {
       setAreas(createEmptyAreas())
       setTimeout(() => navigate('/'), 900)
     } catch (err) {
-      setError(err.message || 'Não foi possível criar o evento.')
+      showToast(err.message || 'Não foi possível criar o evento.', 'error')
     } finally {
       setLoading(false)
     }
@@ -302,7 +300,7 @@ export default function CreateEvent() {
             role="tab"
             aria-selected={mode === 'cinema'}
             className={`create-event__toggle-btn ${mode === 'cinema' ? 'is-active' : ''}`}
-            onClick={() => { setMode('cinema'); setError('') }}
+            onClick={() => setMode('cinema')}
           >
             Cinema
           </button>
@@ -311,7 +309,7 @@ export default function CreateEvent() {
             role="tab"
             aria-selected={mode === 'show'}
             className={`create-event__toggle-btn ${mode === 'show' ? 'is-active' : ''}`}
-            onClick={() => { setMode('show'); setError('') }}
+            onClick={() => setMode('show')}
           >
             Show
           </button>
@@ -320,9 +318,6 @@ export default function CreateEvent() {
         {/* ========== SHOW FORM ========== */}
         {mode === 'show' ? (
           <form className="auth-form create-event__form" onSubmit={handleSubmitShow}>
-            {error ? <p className="auth-form__error">{error}</p> : null}
-            {success ? <p className="create-event__success">{success}</p> : null}
-
             <label className="auth-form__field">
               <span>Show / artista</span>
               <select
@@ -451,9 +446,6 @@ export default function CreateEvent() {
         ) : (
         /* ========== CINEMA FORM ========== */
           <form className="auth-form create-event__form" onSubmit={handleSubmitCinema}>
-            {error ? <p className="auth-form__error">{error}</p> : null}
-            {success ? <p className="create-event__success">{success}</p> : null}
-
             <label className="auth-form__field">
               <span>Filme</span>
               <select
@@ -588,6 +580,7 @@ export default function CreateEvent() {
           </form>
         )}
       </main>
+      <Footer />
     </div>
   )
 }

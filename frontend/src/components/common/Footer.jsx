@@ -1,15 +1,22 @@
 import { Link } from 'react-router-dom'
 import Logo from './Logo'
+import { useAuth } from '../../contexts/AuthContext'
 
 const year = new Date().getFullYear()
 
 export default function Footer() {
+  const { isAuthenticated, isCliente, isOrganizer, isPortaria } = useAuth()
+
   return (
     <footer className="site-footer">
       <div className="site-footer__glow" aria-hidden="true" />
       <div className="site-footer__inner">
         <div className="site-footer__brand">
-          <Link to="/" className="site-footer__logo" aria-label="EliteDev Eventos">
+          <Link
+            to={isPortaria ? '/portaria' : '/'}
+            className="site-footer__logo"
+            aria-label="EliteDev Eventos"
+          >
             <Logo />
           </Link>
           <p className="site-footer__tagline">
@@ -18,16 +25,25 @@ export default function Footer() {
         </div>
 
         <div className="site-footer__cols">
-          <div className="site-footer__col">
-            <h3>Explorar</h3>
-            <Link to="/cinema">Cinema</Link>
-            <Link to="/eventos">Eventos</Link>
-          </div>
+          {!isPortaria ? (
+            <div className="site-footer__col">
+              <h3>Explorar</h3>
+              <Link to="/cinema">Cinema</Link>
+              <Link to="/eventos">Eventos</Link>
+            </div>
+          ) : null}
 
           <div className="site-footer__col">
             <h3>Conta</h3>
-            <Link to="/login">Entrar</Link>
-            <Link to="/cadastro">Criar conta</Link>
+            {!isAuthenticated ? (
+              <>
+                <Link to="/login">Entrar</Link>
+                <Link to="/cadastro">Criar conta</Link>
+              </>
+            ) : null}
+            {isCliente ? <Link to="/meus-ingressos">Meus Ingressos</Link> : null}
+            {isOrganizer ? <Link to="/eventos/novo">Criar evento</Link> : null}
+            {isPortaria ? <Link to="/portaria">Portaria</Link> : null}
           </div>
 
           <div className="site-footer__col">

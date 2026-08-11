@@ -1,6 +1,7 @@
 import { useEffect, useReducer } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import Navbar from '../components/common/Navbar'
+import Footer from '../components/common/Footer'
 import ShowVenueMap from '../components/events/ShowVenueMap'
 import { useAuth } from '../contexts/AuthContext'
 import { SHOW_AREAS } from '../data/showAreas'
@@ -168,19 +169,20 @@ export default function ShowDetail() {
 
   if (loading) {
     return (
-      <>
+      <div className="page">
         <Navbar />
         <div className="detail-loading">
           <div className="spinner" />
           <p>Carregando show...</p>
         </div>
-      </>
+        <Footer />
+      </div>
     )
   }
 
   if (error) {
     return (
-      <>
+      <div className="page">
         <Navbar />
         <div className="detail-error">
           <p>{error}</p>
@@ -188,14 +190,15 @@ export default function ShowDetail() {
             Voltar
           </Link>
         </div>
-      </>
+        <Footer />
+      </div>
     )
   }
 
   const sellableAreas = areas.filter((area) => area.capacity > 0)
 
   return (
-    <>
+    <div className="page">
       <Navbar />
 
       <main className="detail">
@@ -344,6 +347,7 @@ export default function ShowDetail() {
           </section>
         ) : null}
       </main>
-    </>
+      <Footer />
+    </div>
   )
 }

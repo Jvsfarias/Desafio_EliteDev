@@ -1,15 +1,21 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import Logo from './Logo'
 import UserMenu from './UserMenu'
 import { useAuth } from '../../contexts/AuthContext'
 
 export default function Navbar() {
   const location = useLocation()
+  const navigate = useNavigate()
   const { user, isAuthenticated, isOrganizer, isPortaria, isCliente, logout } = useAuth()
   const isCinema = location.pathname === '/cinema'
   const isEventos = location.pathname === '/eventos'
   const isMyTickets = location.pathname === '/meus-ingressos'
   const isCreateEvent = location.pathname === '/eventos/novo'
+
+  function handleLogout() {
+    logout()
+    navigate('/')
+  }
 
   return (
     <header className="navbar">
@@ -62,7 +68,7 @@ export default function Navbar() {
             user={user}
             isCliente={isCliente}
             isOrganizer={isOrganizer}
-            onLogout={logout}
+            onLogout={handleLogout}
           />
         ) : (
           <Link to="/login" className="navbar__login">
